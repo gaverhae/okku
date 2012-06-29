@@ -1,9 +1,7 @@
-(ns okku.samples.pi.bare
+(ns okku.samples.pi.okku
   (import [akka.actor ActorRef ActorSystem Props UntypedActor
            UntypedActorFactory]
-          [akka.routing RoundRobinRouter]
-          [akka.util Duration]
-          [java.util.concurrent TimeUnit]))
+          [akka.routing RoundRobinRouter]))
 
 (defn message-compute []
   {:type :compute})
@@ -62,8 +60,7 @@
                                                                                         :nr 1}))
                                                          (if (= (:nr @res) nm)
                                                            (do (.tell l (message-pi-approx (:pi @res)
-                                                                                           (Duration/create (- (System/currentTimeMillis) start)
-                                                                                                            TimeUnit/MILLISECONDS)))
+                                                                                           (- (System/currentTimeMillis) start)))
                                                              (-> this .getContext (.stop (.getSelf this))))))
                                                (.unhandled this msg))))))))
             name))
@@ -75,8 +72,8 @@
                         (proxy [UntypedActor] []
                           (onReceive [msg] (condp = (:type msg)
                                              :pi-approximation (do
-                                                                 (println (format "\n\tPi approximation: \t\t%s\n\tCalculation time: \t%s"
-                                                                                  (:duration msg) (:pi msg)
+                                                                 (println (format "\n\tPi approximation: \t\t%1.8f\n\tCalculation time: \t%8d millis"
+                                                                                  (:pi msg) (:duration msg)))
                                                                  (-> this .getContext .system .shutdown))
                                              (.unhandled this msg)))))))))
 
