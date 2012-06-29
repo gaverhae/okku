@@ -1,0 +1,19 @@
+# okku
+
+Okku is a Clojure wrapper for the Akka library. Akka is an erlang-inspired Scala library implementing the Actor model for concurrency and distribution.
+
+The Akka library has a Java interface, but using it directly from Clojure is rather unwieldy as it is mainly based on subclassing, and requires some juggling with factories (see "bare" examples in src/cloka/samples).
+
+For explanations on the Actor model itself and how and when to use it, see the documentation of either Akka or Erlang.
+
+## Usage
+
+From Clojure, Akka is mostly useful for the relatively transparent distribution it allows; concurrency is already well supported in Clojure.
+
+TODO: Add usage description
+
+## License
+
+Copyright (C) 2012 Gary Verhaegen.
+
+Distributed under the Eclipse Public License, the same as Clojure.
