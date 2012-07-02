@@ -6,8 +6,13 @@
           [java.util.concurrent TimeUnit])
   (require [clojure.walk :as w]))
 
+(defn extract [kw f]
+  (first (filter #(= kw (first %)) f)))
+
 (defmacro defactory [aname [self-name sender-name message & args] & body]
-  (let [rec (first (filter #(= :dispatch-on (first %)) body))]
+  (let [rec (extract :dispatch-on body)
+        state (rest (extract :local-state body))
+        pre-start (rest (extract :pre-start body))]
     (if-not rec (throw (RuntimeException. "defactory needs at least a dispatch-on clause")))
     (let [rec (->> rec
                 (w/postwalk (fn [f] (cond
@@ -26,11 +31,14 @@
       `(defn ~aname [~@args & {c# :context r# :router n# :name}]
          (let [p# (Props. (proxy [UntypedActorFactory] []
                            (~'create []
-                             (proxy [UntypedActor] []
-                               (~'onReceive [~(assoc message :as m)]
-                                 ~(concat (cons 'cond (reduce (fn [acc [k v]] (concat acc [`(= ~(:dispatch-on rec) ~k)
-                                                                                           v])) () (dissoc rec :dispatch-on)))
-                                          `(:else (.unhandled ~'this ~m))))))))
+                             (let [~@state]
+                               (proxy [UntypedActor] []
+                                 (~'onReceive [~(assoc message :as m)]
+                                   ~(concat (cons 'cond (reduce (fn [acc [k v]] (concat acc [`(= ~(:dispatch-on rec) ~k)
+                                                                                             v])) () (dissoc rec :dispatch-on)))
+                                            `(:else (.unhandled ~'this ~m))))
+                                 ~@(if (seq pre-start)
+                                     `((~'preStart [] ~@pre-start))))))))
                p# (if r# (.withRouter p# r#) p#)]
            (if n#
              (.actorOf c# p# n#)
