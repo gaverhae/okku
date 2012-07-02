@@ -1,7 +1,8 @@
 (ns okku.core
   (import [akka.actor ActorRef ActorSystem Props UntypedActor
            UntypedActorFactory]
-          [akka.routing RoundRobinRouter])
+          [akka.routing RoundRobinRouter]
+          [com.typesafe.config ConfigFactory])
   (require [clojure.walk :as w]))
 
 (defn- extract [kw f]
@@ -10,8 +11,10 @@
 (defn round-robin-router [n]
   (RoundRobinRouter. n))
 
-(defn create-actor-system [name]
-  (ActorSystem/create name))
+(defn create-actor-system [name & {:keys [config]}]
+  (if config
+    (ActorSystem/create name (.getConfig (ConfigFactory/load) config))
+    (ActorSystem/create name)))
 
 (defmacro defactory [aname [self-name sender-name message & args] & body]
   (let [rec (extract :dispatch-on body)

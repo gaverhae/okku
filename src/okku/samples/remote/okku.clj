@@ -1,7 +1,5 @@
 (ns okku.samples.remote.okku
-  (import [akka.actor ActorRef Props UntypedActor UntypedActorFactory ActorSystem]
-          [akka.kernel Bootable]
-          [com.typesafe.config ConfigFactory])
+  (import [akka.kernel Bootable])
   (use [okku.core]))
 
 (defn msg-math-op [act op]
@@ -25,11 +23,9 @@
 
 (defactory actor-advanced-calculator [self sender {t :subtype a :1 b :2}]
   [:dispatch-on t
-   :mul (do
-          (println (format "Calculating %s * %s" a b))
+   :mul (do (println (format "Calculating %s * %s" a b))
           (! (msg-mul-res a b (* a b))))
-   :div (do
-          (println (format "Calculating %s / %s" a b))
+   :div (do (println (format "Calculating %s / %s" a b))
           (! (msg-div-res a b (/ a b))))])
 
 (defactory actor-creation [self sender {t :type s :subtype a :1 b :2 r :result
@@ -39,46 +35,25 @@
    [:math-result :mul] (println (format "Mul result: %s * %s = %s" a b r))
    [:math-result :div] (println (format "Div result: %s / %s = %2.3f" a b (double r)))])
 
-(defn actor-lookup [context]
-  (.actorOf context
-            (Props. (proxy [UntypedActorFactory] []
-                      (create []
-                        (proxy [UntypedActor] []
-                          (onReceive [msg] (condp = (:type msg)
-                                             :math-op (.tell (:actor msg)
-                                                             (:op msg)
-                                                             (.getSelf this))
-                                             :math-result (condp = (:subtype msg)
-                                                            :add (println (format
-                                                                            "Add result: %s + %s = %s"
-                                                                            (:1 msg) (:2 msg) (:result msg)))
-                                                            :sub (println (format
-                                                                            "Sub result: %s - %s = %s"
-                                                                            (:1 msg) (:2 msg) (:result msg))))
-                                             (.unhandled this msg)))))))))
+(defactory actor-lookup [self sender {t :type s :subtype a :1 b :2 r :result
+                                      act :actor o :op}]
+  [:dispatch-on [t s]
+   [:math-op nil] (tell act o)
+   [:math-result :add] (println (format "Add result: %s + %s = %s" a b r))
+   [:math-result :sub] (println (format "Sub result: %s - %s = %s" a b r))])
 
-(defn actor-simple-calculator [context name]
-  (.actorOf context
-            (Props. (proxy [UntypedActorFactory] []
-                      (create []
-                        (proxy [UntypedActor] []
-                          (onReceive [msg] (condp = (:subtype msg)
-                                             :add (do (println (format "Calculating %s + %s"
-                                                                       (:1 msg) (:2 msg)))
-                                                    (.tell (.getSender this)
-                                                           (msg-add-res (:1 msg) (:2 msg) (+ (:1 msg) (:2 msg)))))
-                                             :sub (do (println (format "Calculating %s - %s"
-                                                                       (:1 msg) (:2 msg)))
-                                                    (.tell (.getSender this)
-                                                           (msg-sub-res (:1 msg) (:2 msg) (- (:1 msg) (:2 msg)))))
-                                             (.unhandled this msg)))))))
-            name))
+(defactory actor-simple-calculator [self sender {t :subtype a :1 b :2}]
+  [:dispatch-on t
+   :add (do (println (format "Calculating %s + %s" a b))
+          (! (msg-add-res a b (+ a b))))
+   :sub (do (println (format "Calculating %s - %s" a b))
+          (! (msg-sub-res a b (- a b))))])
 
 (defn calculator-application []
-  (let [system (ActorSystem/create "CalculatorApplication"
-                                   (.getConfig (ConfigFactory/load)
-                                               "calculator"))
-        actor (actor-simple-calculator system "simpleCalculator")]
+  (let [system (create-actor-system "CalculatorApplication"
+                                    :config "calculator")
+        actor (actor-simple-calculator :context system
+                                       :name "simpleCalculator")]
     (proxy [Bootable] []
       (startup [])
       (shutdown [] (.shutdown system)))))
@@ -87,9 +62,8 @@
   (doSomething [x]))
 
 (defn creation-application []
-  (let [system (ActorSystem/create "CreationApplication"
-                                   (.getConfig (ConfigFactory/load)
-                                               "remotecreation"))
+  (let [system (create-actor-system "CreationApplication"
+                                    :config "remotecreation")
         actor (actor-creation :context system)
         remoteActor (actor-advanced-calculator :context system
                                                :name "advancedCalculator")]
@@ -99,10 +73,9 @@
       (shutdown [] (.shutdown system)))))
 
 (defn lookup-application []
-  (let [system (ActorSystem/create "LookupApplication"
-                                   (.getConfig (ConfigFactory/load)
-                                               "remotelookup"))
-        actor (actor-lookup system)
+  (let [system (create-actor-system "LookupApplication"
+                                    :config "remotelookup")
+        actor (actor-lookup :context system)
         remoteActor (.actorFor system
                                "akka://CalculatorApplication@127.0.0.1:2552/user/simpleCalculator")]
     (proxy [Bootable IDoSomething] []
