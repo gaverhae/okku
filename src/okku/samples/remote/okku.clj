@@ -1,7 +1,8 @@
-(ns okku.samples.remote.bare
+(ns okku.samples.remote.okku
   (import [akka.actor ActorRef Props UntypedActor UntypedActorFactory ActorSystem]
           [akka.kernel Bootable]
-          [com.typesafe.config ConfigFactory]))
+          [com.typesafe.config ConfigFactory])
+  (use [okku.core]))
 
 (defn msg-math-op [act op]
   {:type :math-op :actor act :op op})
@@ -22,24 +23,14 @@
 (defn msg-div-res [n1 n2 res]
   {:type :math-result :subtype :div :1 n1 :2 n2 :result res})
 
-(defn actor-advanced-calculator [context name]
-  (.actorOf context
-            (Props. (proxy [UntypedActorFactory] []
-                      (create []
-                        (proxy [UntypedActor] []
-                          (onReceive [msg] (condp = (:subtype msg)
-                                             :mul (do (println (format "Calculating %s * %s"
-                                                                       (:1 msg) (:2 msg)))
-                                                    (.tell (.getSender this)
-                                                           (msg-mul-res
-                                                             (:1 msg) (:2 msg) (* (:1 msg) (:2 msg)))))
-                                             :div (do (println (format "Calculating %s / %s"
-                                                                       (:1 msg) (:2 msg)))
-                                                    (.tell (.getSender this)
-                                                           (msg-div-res
-                                                             (:1 msg) (:2 msg) (/ (:1 msg) (:2 msg)))))
-                                             (.unhandled this msg)))))))
-            name))
+(defactory actor-advanced-calculator [self sender {t :subtype a :1 b :2}]
+  [:dispatch-on t
+   :mul (do
+          (println (format "Calculating %s * %s" a b))
+          (! (msg-mul-res a b (* a b))))
+   :div (do
+          (println (format "Calculating %s / %s" a b))
+          (! (msg-div-res a b (/ a b))))])
 
 (defn actor-creation [context]
   (.actorOf context
@@ -111,7 +102,8 @@
                                    (.getConfig (ConfigFactory/load)
                                                "remotecreation"))
         actor (actor-creation system)
-        remoteActor (actor-advanced-calculator system "advancedCalculator")]
+        remoteActor (actor-advanced-calculator :context system
+                                               :name "advancedCalculator")]
     (proxy [Bootable IDoSomething] []
       (doSomething [op] (.tell actor (msg-math-op remoteActor op)))
       (startup [])
