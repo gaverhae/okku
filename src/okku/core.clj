@@ -31,4 +31,5 @@
                                      (~'onReceive [~(assoc message :as m)]
                                        ~(concat (cons 'cond (reduce (fn [acc [k v]] (concat acc [`(= ~(:dispatch-on rec) ~k)
                                                                              v])) () (dissoc rec :dispatch-on)))
-                                                `(:else (.unhandled ~'this ~m))))))))))))))
+                                                `(:else (.unhandled ~'this ~m)))))))))
+                   name#)))))
