@@ -38,9 +38,9 @@
                                                :compute (dotimes [n nm]
                                                           (.tell (if-not @workerRouter
                                                                    (reset! workerRouter
-                                                                           (actors-worker (.getContext this)
-                                                                                          (RoundRobinRouter. nw)
-                                                                                          "workerRouter"))
+                                                                           (actors-worker :context (.getContext this)
+                                                                                          :router (RoundRobinRouter. nw)
+                                                                                          :name "workerRouter"))
                                                                    @workerRouter)
                                                                  (message-work n ne)
                                                                  (.getSelf this)))
