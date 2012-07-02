@@ -1,13 +1,17 @@
 (ns okku.core
   (import [akka.actor ActorRef ActorSystem Props UntypedActor
            UntypedActorFactory]
-          [akka.routing RoundRobinRouter]
-          [akka.util Duration]
-          [java.util.concurrent TimeUnit])
+          [akka.routing RoundRobinRouter])
   (require [clojure.walk :as w]))
 
-(defn extract [kw f]
+(defn- extract [kw f]
   (first (filter #(= kw (first %)) f)))
+
+(defn round-robin-router [n]
+  (RoundRobinRouter. n))
+
+(defn create-actor-system [name]
+  (ActorSystem/create name))
 
 (defmacro defactory [aname [self-name sender-name message & args] & body]
   (let [rec (extract :dispatch-on body)

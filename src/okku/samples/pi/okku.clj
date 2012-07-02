@@ -1,8 +1,5 @@
 (ns okku.samples.pi.okku
-  (import [akka.actor ActorRef ActorSystem Props UntypedActor
-           UntypedActorFactory]
-          [akka.routing RoundRobinRouter])
-  (use [okku.core :only [defactory]]))
+  (use [okku.core]))
 
 (defn message-compute []
   {:type :compute})
@@ -33,7 +30,7 @@
    start (System/currentTimeMillis)]
   [:pre-start
    (reset! workerRouter (actors-worker :context (.getContext this)
-                                       :router (RoundRobinRouter. nw)
+                                       :router (round-robin-router nw)
                                        :name "workerRouter"))]
   [:dispatch-on t
    :compute (dotimes [n nm]
@@ -54,7 +51,7 @@
 (defn -main [& args]
   (let [nw (if args (Integer/parseInt (first args)) 4)
         ne 10000 nm 10000
-        sys (ActorSystem/create "PiSystem")
+        sys (create-actor-system "PiSystem")
         listener (actor-listener :context sys :name "listener")
         master (actor-master nw nm ne listener :context sys :name "master")]
     (println "Number of workers: " nw)
