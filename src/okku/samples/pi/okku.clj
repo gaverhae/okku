@@ -5,13 +5,10 @@
 
 (defn message-compute []
   {:type :compute})
-
 (defn message-work [start nrElem]
   {:type :work, :start start, :nrOfElements nrElem})
-
 (defn message-result [value]
   {:type :result :value value})
-
 (defn message-pi-approx [pi dur]
   {:type :pi-approximation :pi pi :duration dur})
 
@@ -21,8 +18,8 @@
       (if (= i limit)
         tot
         (recur (unchecked-inc i) (+ tot
-                          (* 4.0 (/ (double (unchecked-add 1 (unchecked-negate (unchecked-multiply 2 (unchecked-remainder-int i 2)))))
-                                    (double (unchecked-add 1 (unchecked-multiply 2 i)))))))))))
+                                    (* 4.0 (/ (double (unchecked-add 1 (unchecked-negate (unchecked-multiply 2 (unchecked-remainder-int i 2)))))
+                                              (double (unchecked-add 1 (unchecked-multiply 2 i)))))))))))
 
 (defn actors-worker [context router name]
   (.actorOf context
@@ -65,7 +62,7 @@
                                                (.unhandled this msg))))))))
             name))
 
-(defn actor-listener [context nw name nm]
+(defn actor-listener [context name]
   (.actorOf context
             (Props. (proxy [UntypedActorFactory] []
                       (create []
@@ -78,12 +75,11 @@
                                              (.unhandled this msg)))))))))
 
 (defn -main [& args]
-  (let [nw (if args (Integer/parseInt (first args)) 4)]
+  (let [nw (if args (Integer/parseInt (first args)) 4)
+        ne 10000 nm 10000
+        sys (ActorSystem/create "PiSystem")
+        listener (actor-listener sys "listener")
+        master (actor-master sys nw nm ne listener "master")]
     (println "Number of workers: " nw)
-    (dotimes [n 20]
-      (let [ne 10000 nm (* (inc n) 10000)
-            sys (ActorSystem/create "PiSystem")
-            listener (actor-listener sys nw "listener" nm)
-            master (actor-master sys nw nm ne listener "master")]
-        (.tell master (message-compute))
-        (.awaitTermination sys)))))
+    (.tell master (message-compute))
+    (.awaitTermination sys)))
