@@ -26,32 +26,23 @@
   [:dispatch-on t
    :work (! sender (message-result (calculate-pi-for s n)))])
 
-(defn actor-master [context nw nm ne l name]
-  (.actorOf context
-            (Props. (proxy [UntypedActorFactory] []
-                      (create []
-                        (let [workerRouter (atom false)
-                              res (atom {:pi 0 :nr 0})
-                              start (System/currentTimeMillis)]
-                          (proxy [UntypedActor] []
-                            (onReceive [msg] (condp = (:type msg)
-                                               :compute (dotimes [n nm]
-                                                          (.tell (if-not @workerRouter
-                                                                   (reset! workerRouter
-                                                                           (actors-worker :context (.getContext this)
-                                                                                          :router (RoundRobinRouter. nw)
-                                                                                          :name "workerRouter"))
-                                                                   @workerRouter)
-                                                                 (message-work n ne)
-                                                                 (.getSelf this)))
-                                               :result (do (swap! res #(merge-with + % {:pi (:value msg)
-                                                                                        :nr 1}))
-                                                         (if (= (:nr @res) nm)
-                                                           (do (.tell l (message-pi-approx (:pi @res)
-                                                                                           (- (System/currentTimeMillis) start)))
-                                                             (-> this .getContext (.stop (.getSelf this))))))
-                                               (.unhandled this msg))))))))
-            name))
+(defactory actor-master [self sender {t :type v :value} nw nm ne l]
+  [:local-state
+   workerRouter (atom false)
+   res (atom {:pi 0 :nr 0})
+   start (System/currentTimeMillis)]
+  [:pre-start
+   (reset! workerRouter (actors-worker :context (.getContext this)
+                                       :router (RoundRobinRouter. nw)
+                                       :name "workerRouter"))]
+  [:dispatch-on t
+   :compute (dotimes [n nm]
+              (! @workerRouter (message-work n ne)))
+   :result (do (swap! res #(merge-with + % {:pi v :nr 1}))
+             (when (= (:nr @res) nm)
+               (! l (message-pi-approx (:pi @res)
+                                       (- (System/currentTimeMillis) start)))
+               (-> this .getContext (.stop self))))])
 
 (defn actor-listener [context name]
   (.actorOf context
@@ -70,7 +61,7 @@
         ne 10000 nm 10000
         sys (ActorSystem/create "PiSystem")
         listener (actor-listener sys "listener")
-        master (actor-master sys nw nm ne listener "master")]
+        master (actor-master nw nm ne listener :context sys :name "master")]
     (println "Number of workers: " nw)
     (.tell master (message-compute))
     (.awaitTermination sys)))
