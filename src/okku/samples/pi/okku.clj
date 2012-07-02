@@ -1,7 +1,8 @@
 (ns okku.samples.pi.okku
   (import [akka.actor ActorRef ActorSystem Props UntypedActor
            UntypedActorFactory]
-          [akka.routing RoundRobinRouter]))
+          [akka.routing RoundRobinRouter])
+  (use [okku.core :only [defactory]]))
 
 (defn message-compute []
   {:type :compute})
@@ -21,19 +22,9 @@
                                     (* 4.0 (/ (double (unchecked-add 1 (unchecked-negate (unchecked-multiply 2 (unchecked-remainder-int i 2)))))
                                               (double (unchecked-add 1 (unchecked-multiply 2 i)))))))))))
 
-(defn actors-worker [context router name]
-  (.actorOf context
-            (-> (Props. (proxy [UntypedActorFactory] []
-                      (create []
-                        (proxy [UntypedActor] []
-                          (onReceive [msg] (condp = (:type msg)
-                                             :work (.tell (.getSender this)
-                                                          (message-result
-                                                            (calculate-pi-for (:start msg) (:nrOfElements msg)))
-                                                          (.getSelf this))
-                                             (.unhandled this msg)))))))
-              (.withRouter router))
-            name))
+(defactory actors-worker [self sender {t :type s :start n :nrOfElements}]
+  [:dispatch-on t
+   :work (! sender (message-result (calculate-pi-for s n)))])
 
 (defn actor-master [context nw nm ne l name]
   (.actorOf context
