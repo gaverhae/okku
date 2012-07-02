@@ -32,23 +32,12 @@
           (println (format "Calculating %s / %s" a b))
           (! (msg-div-res a b (/ a b))))])
 
-(defn actor-creation [context]
-  (.actorOf context
-            (Props. (proxy [UntypedActorFactory] []
-                      (create []
-                        (proxy [UntypedActor] []
-                          (onReceive [msg] (condp = (:type msg)
-                                             :math-op (.tell (:actor msg)
-                                                             (:op msg)
-                                                             (.getSelf this))
-                                             :math-result (condp = (:subtype msg)
-                                                            :mul (println (format
-                                                                            "Mul result: %s * %s = %s"
-                                                                            (:1 msg) (:2 msg) (:result msg)))
-                                                            :div (println (format
-                                                                            "Div result: %s / %s = %2.3f"
-                                                                            (:1 msg) (:2 msg) (double (:result msg)))))
-                                             (.unhandled this msg)))))))))
+(defactory actor-creation [self sender {t :type s :subtype a :1 b :2 r :result
+                                        act :actor o :op}]
+  [:dispatch-on [t s]
+   [:math-op nil] (tell act o)
+   [:math-result :mul] (println (format "Mul result: %s * %s = %s" a b r))
+   [:math-result :div] (println (format "Div result: %s / %s = %2.3f" a b (double r)))])
 
 (defn actor-lookup [context]
   (.actorOf context
@@ -101,7 +90,7 @@
   (let [system (ActorSystem/create "CreationApplication"
                                    (.getConfig (ConfigFactory/load)
                                                "remotecreation"))
-        actor (actor-creation system)
+        actor (actor-creation :context system)
         remoteActor (actor-advanced-calculator :context system
                                                :name "advancedCalculator")]
     (proxy [Bootable IDoSomething] []
