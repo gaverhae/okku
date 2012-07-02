@@ -23,12 +23,19 @@
                                       (= f sender-name) `(.getSender ~'this)
                                       (= f self-name) `(.getSelf ~'this)
                                       (and (list? f)
-                                           (= '! (first f))) (if (= (count f) 3)
+                                           (= 'tell (first f))) (if (= (count f) 3)
+                                                                  `(.tell
+                                                                     ~(nth f 1)
+                                                                     ~(nth f 2)
+                                                                     (.getSelf ~'this))
+                                                                  (throw (RuntimeException. "Send-message forms (using tell) must contain both the destination and the message.")))
+                                      (and (list? f)
+                                           (= '! (first f))) (if (= (count f) 2)
                                                                `(.tell
+                                                                  (.getSender ~'this)
                                                                   ~(nth f 1)
-                                                                  ~(nth f 2)
                                                                   (.getSelf ~'this))
-                                                               (throw (RuntimeException. "Send-message forms (using !) must only contain the sender and the message.")))
+                                                               (throw (RuntimeException. "Send-message forms (using !) must only contain the message.")))
                                       :else f)))
                 (apply hash-map))
           m `msg#]

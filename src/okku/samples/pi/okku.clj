@@ -21,7 +21,7 @@
 
 (defactory actors-worker [self sender {t :type s :start n :nrOfElements}]
   [:dispatch-on t
-   :work (! sender (message-result (calculate-pi-for s n)))])
+   :work (tell sender (message-result (calculate-pi-for s n)))])
 
 (defactory actor-master [self sender {t :type v :value} nw nm ne l]
   [:local-state
@@ -34,11 +34,11 @@
                                        :name "workerRouter"))]
   [:dispatch-on t
    :compute (dotimes [n nm]
-              (! @workerRouter (message-work n ne)))
+              (tell @workerRouter (message-work n ne)))
    :result (do (swap! res #(merge-with + % {:pi v :nr 1}))
              (when (= (:nr @res) nm)
-               (! l (message-pi-approx (:pi @res)
-                                       (- (System/currentTimeMillis) start)))
+               (tell l (message-pi-approx (:pi @res)
+                                          (- (System/currentTimeMillis) start)))
                (-> this .getContext (.stop self))))])
 
 (defactory actor-listener [self sender {t :type pi :pi dur :duration}]
