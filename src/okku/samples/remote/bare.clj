@@ -5,28 +5,20 @@
 
 (defn msg-math-op [act op]
   {:type :math-op :actor act :op op})
-
 (defn msg-add [n1 n2]
   {:type :math-op :subtype :add :1 n1 :2 n2})
-
 (defn msg-add-res [n1 n2 res]
   {:type :math-result :subtype :add :1 n1 :2 n2 :result res})
-
 (defn msg-sub [n1 n2]
   {:type :math-op :subtype :sub :1 n1 :2 n2})
-
 (defn msg-sub-res [n1 n2 res]
   {:type :math-result :subtype :sub :1 n1 :2 n2 :result res})
-
 (defn msg-mul [n1 n2]
   {:type :math-op :subtype :mul :1 n1 :2 n2})
-
 (defn msg-mul-res [n1 n2 res]
   {:type :math-result :subtype :mul :1 n1 :2 n2 :result res})
-
 (defn msg-div [n1 n2]
   {:type :math-op :subtype :div :1 n1 :2 n2})
-
 (defn msg-div-res [n1 n2 res]
   {:type :math-result :subtype :div :1 n1 :2 n2 :result res})
 
