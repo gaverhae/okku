@@ -16,9 +16,6 @@
     (ActorSystem/create name (.getConfig (ConfigFactory/load) config))
     (ActorSystem/create name)))
 
-(defn- extract [sym f]
-  (first (filter #(= sym (first %)) f)))
-
 (defmacro !
   "Sends the msg value as a message to target, or to current sender if target
   is not specified. Can only be used inside an actor."
