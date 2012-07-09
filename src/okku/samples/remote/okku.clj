@@ -31,14 +31,14 @@
 (defactory actor-creation [self sender {t :type s :subtype a :1 b :2 r :result
                                         act :actor o :op}]
   [:dispatch-on [t s]
-   [:math-op nil] (tell act o)
+   [:math-op nil] (! act o)
    [:math-result :mul] (println (format "Mul result: %s * %s = %s" a b r))
    [:math-result :div] (println (format "Div result: %s / %s = %2.3f" a b (double r)))])
 
 (defactory actor-lookup [self sender {t :type s :subtype a :1 b :2 r :result
                                       act :actor o :op}]
   [:dispatch-on [t s]
-   [:math-op nil] (tell act o)
+   [:math-op nil] (! act o)
    [:math-result :add] (println (format "Add result: %s + %s = %s" a b r))
    [:math-result :sub] (println (format "Sub result: %s - %s = %s" a b r))])
 

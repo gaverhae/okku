@@ -34,10 +34,10 @@
                                        :name "workerRouter"))]
   [:dispatch-on t
    :compute (dotimes [n nm]
-              (tell @workerRouter (message-work n ne)))
+              (! @workerRouter (message-work n ne)))
    :result (do (swap! res #(merge-with + % {:pi v :nr 1}))
              (when (= (:nr @res) nm)
-               (tell l (message-pi-approx (:pi @res)
+               (! l (message-pi-approx (:pi @res)
                                           (- (System/currentTimeMillis) start)))
                (-> this .getContext (.stop self))))])
 

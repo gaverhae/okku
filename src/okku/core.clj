@@ -19,6 +19,12 @@
 (defn- extract [sym f]
   (first (filter #(= sym (first %)) f)))
 
+(defmacro !
+  "Sends the msg value as a message to target, or to current sender if target
+  is not specified. Can only be used inside an actor."
+  ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
+  ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
+
 (defmacro defactory [aname [self-name sender-name message & args] & body]
   (let [rec (extract :dispatch-on body)
         state (rest (extract :local-state body))
@@ -28,20 +34,6 @@
                 (w/postwalk (fn [f] (cond
                                       (= f sender-name) `(.getSender ~'this)
                                       (= f self-name) `(.getSelf ~'this)
-                                      (and (list? f)
-                                           (= 'tell (first f))) (if (= (count f) 3)
-                                                                  `(.tell
-                                                                     ~(nth f 1)
-                                                                     ~(nth f 2)
-                                                                     (.getSelf ~'this))
-                                                                  (throw (RuntimeException. "Send-message forms (using tell) must contain both the destination and the message.")))
-                                      (and (list? f)
-                                           (= '! (first f))) (if (= (count f) 2)
-                                                               `(.tell
-                                                                  (.getSender ~'this)
-                                                                  ~(nth f 1)
-                                                                  (.getSelf ~'this))
-                                                               (throw (RuntimeException. "Send-message forms (using !) must only contain the message.")))
                                       :else f)))
                 (apply hash-map))
           m `msg#]
