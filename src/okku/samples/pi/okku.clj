@@ -21,7 +21,7 @@
 
 (defactory actors-worker [self sender {t :type s :start n :nrOfElements}]
   [:dispatch-on t
-   :work (tell sender (message-result (calculate-pi-for s n)))])
+   :work (! (message-result (calculate-pi-for s n)))])
 
 (defactory actor-master [self sender {t :type v :value} nw nm ne l]
   [:local-state
