@@ -22,6 +22,10 @@
   ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
   ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
 
+(defmacro dispatch-on [dv & forms]
+  `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
+         :else (.unhandled ~'this ~dv)))
+
 (defmacro defactor [aname [& arglist] & forms]
   `(defn ~aname [~@arglist & {c# :context r# :router n# :name}]
      (let [p# (Props. (proxy [UntypedActorFactory] []
