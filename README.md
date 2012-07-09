@@ -106,8 +106,8 @@ which expands roughly to:
                  (.withRouter p_auto r_auto)
                  p_auto)]
     (if n_auto
-      (.actorOf c__auto p_auto n_auto)
-      (.actorOf c__auto p_auto))))
+      (.actorOf c_auto p_auto n_auto)
+      (.actorOf c_auto p_auto))))
 ```
 where by roughly I mean that I have removed the qualified names for the clojure.core namespace and shortened the auto-generated variable names for readability.
 
