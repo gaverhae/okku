@@ -22,30 +22,14 @@
   ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
   ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
 
-(defmacro defactory [aname [self-name sender-name message & args] & body]
-  (let [rec (extract :dispatch-on body)
-        state (rest (extract :local-state body))
-        pre-start (rest (extract :pre-start body))]
-    (if-not rec (throw (RuntimeException. "defactory needs at least a dispatch-on clause")))
-    (let [rec (->> rec
-                (w/postwalk (fn [f] (cond
-                                      (= f sender-name) `(.getSender ~'this)
-                                      (= f self-name) `(.getSelf ~'this)
-                                      :else f)))
-                (apply hash-map))
-          m `msg#]
-      `(defn ~aname [~@args & {c# :context r# :router n# :name}]
-         (let [p# (Props. (proxy [UntypedActorFactory] []
-                           (~'create []
-                             (let [~@state]
-                               (proxy [UntypedActor] []
-                                 (~'onReceive [~(assoc message :as m)]
-                                   ~(concat (cons 'cond (reduce (fn [acc [k v]] (concat acc [`(= ~(:dispatch-on rec) ~k)
-                                                                                             v])) () (dissoc rec :dispatch-on)))
-                                            `(:else (.unhandled ~'this ~m))))
-                                 ~@(if (seq pre-start)
-                                     `((~'preStart [] ~@pre-start))))))))
-               p# (if r# (.withRouter p# r#) p#)]
-           (if n#
-             (.actorOf c# p# n#)
-             (.actorOf c# p#)))))))
+(defmacro defactor [aname [& arglist] & forms]
+  `(defn ~aname [~@arglist & {c# :context r# :router n# :name}]
+     (let [p# (Props. (proxy [UntypedActorFactory] []
+                        (~'create []
+                          (let []
+                            (proxy [UntypedActor] []
+                              ~@forms)))))
+           p# (if r# (.withRouter p# r#) p#)]
+       (if n#
+         (.actorOf c# p# n#)
+         (.actorOf c# p#)))))
