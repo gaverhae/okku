@@ -5,16 +5,19 @@
           [com.typesafe.config ConfigFactory])
   (require [clojure.walk :as w]))
 
-(defn- extract [kw f]
-  (first (filter #(= kw (first %)) f)))
-
 (defn round-robin-router [n]
+  "Creates a round-robin router with n replicas."
   (RoundRobinRouter. n))
 
-(defn create-actor-system [name & {:keys [config]}]
+(defn actor-system [name & {:keys [config]}]
+  "Creates a new actor system. config should be the name of the corresponding
+  section in the application.conf file."
   (if config
     (ActorSystem/create name (.getConfig (ConfigFactory/load) config))
     (ActorSystem/create name)))
+
+(defn- extract [sym f]
+  (first (filter #(= sym (first %)) f)))
 
 (defmacro defactory [aname [self-name sender-name message & args] & body]
   (let [rec (extract :dispatch-on body)

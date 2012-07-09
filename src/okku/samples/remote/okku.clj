@@ -50,7 +50,7 @@
           (! (msg-sub-res a b (- a b))))])
 
 (defn calculator-application []
-  (let [system (create-actor-system "CalculatorApplication"
+  (let [system (actor-system "CalculatorApplication"
                                     :config "calculator")
         actor (actor-simple-calculator :context system
                                        :name "simpleCalculator")]
@@ -62,7 +62,7 @@
   (doSomething [x]))
 
 (defn creation-application []
-  (let [system (create-actor-system "CreationApplication"
+  (let [system (actor-system "CreationApplication"
                                     :config "remotecreation")
         actor (actor-creation :context system)
         remoteActor (actor-advanced-calculator :context system
@@ -73,7 +73,7 @@
       (shutdown [] (.shutdown system)))))
 
 (defn lookup-application []
-  (let [system (create-actor-system "LookupApplication"
+  (let [system (actor-system "LookupApplication"
                                     :config "remotelookup")
         actor (actor-lookup :context system)
         remoteActor (.actorFor system
