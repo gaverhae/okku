@@ -26,8 +26,11 @@
   `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
          :else (.unhandled ~'this ~dv)))
 
+(defmacro spawn [& args]
+  args)
+
 (defmacro defactor [aname [& arglist] & forms]
-  `(defn ~aname [~@arglist & {c# :context r# :router n# :name}]
+  `(defn ~aname [~@arglist & {c# :in r# :router n# :name}]
      (let [p# (Props. (proxy [UntypedActorFactory] []
                         (~'create []
                           (let []
