@@ -54,5 +54,5 @@
         lis (spawn listener [] :in sys :name "listener")
         mas (spawn master [nw nm ne lis] :in sys :name "master")]
     (println "Number of workers: " nw)
-    (.tell master (message-compute))
+    (.tell mas (m-compute))
     (.awaitTermination sys)))
