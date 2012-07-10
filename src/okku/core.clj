@@ -32,6 +32,10 @@
     (if n `(.actorOf ~c ~p ~n)
       `(.actorOf ~c ~p))))
 
+(defn look-up [address & {s :in}]
+  (if-not s (throw (IllegalArgumentException. "okku.core/look-up needs an :in argument")))
+  (.actorFor s address))
+
 (defmacro stop []
   '(.stop (.getContext this) (.getSelf this)))
 
