@@ -30,13 +30,17 @@
   args)
 
 (defmacro defactor [aname [& arglist] & forms]
-  `(defn ~aname [~@arglist & {c# :in r# :router n# :name}]
-     (let [p# (Props. (proxy [UntypedActorFactory] []
-                        (~'create []
-                          (let []
-                            (proxy [UntypedActor] []
-                              ~@forms)))))
-           p# (if r# (.withRouter p# r#) p#)]
-       (if n#
-         (.actorOf c# p# n#)
-         (.actorOf c# p#)))))
+  (let [[binds forms] (if (and (= (count forms) 1)
+                               (= (first (first forms)) 'let))
+                        [(second (first forms)) (drop 2 (first forms))]
+                        [nil forms])]
+    `(defn ~aname [[~@arglist] & {c# :in r# :router n# :name}]
+       (let [p# (Props. (proxy [UntypedActorFactory] []
+                          (~'create []
+                            (let [~@binds]
+                              (proxy [UntypedActor] []
+                                ~@forms)))))
+             p# (if r# (.withRouter p# r#) p#)]
+         (if n#
+           (.actorOf c# p# n#)
+           (.actorOf c# p#))))))
