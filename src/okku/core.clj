@@ -29,6 +29,12 @@
 (defmacro spawn [& args]
   args)
 
+(defmacro stop []
+  '(.stop (.getContext this) (.getSelf this)))
+
+(defmacro shutdown []
+  '(-> this .getContext .system .shutdown))
+
 (defmacro defactor [aname [& arglist] & forms]
   (let [[binds forms] (if (and (= (count forms) 1)
                                (= (first (first forms)) 'let))
