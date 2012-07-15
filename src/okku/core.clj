@@ -9,12 +9,30 @@
   "Creates a round-robin router with n replicas."
   (RoundRobinRouter. n))
 
-(defn actor-system [name & {:keys [config]}]
-  "Creates a new actor system. config should be the name of the corresponding
-  section in the application.conf file."
-  (if config
-    (ActorSystem/create name (.getConfig (ConfigFactory/load) config))
-    (ActorSystem/create name)))
+(defn actor-system [name & {:keys [config file port local hostname]
+                            :or {file "application"
+                                 config false
+                                 port 2552
+                                 hostname "127.0.0.1"
+                                 local false}}]
+  "Creates a new actor system.
+  config should be the name of the corresponding section in the application.conf file.
+  file should be the name of the config file (.conf appended by the library).
+  port should be the port number for this ActorSystem (lower priority than config file).
+  local creates a local actor system (port option is then ignored, default to false)."
+  (ActorSystem/create
+    name
+    (ConfigFactory/load
+      (-> (ConfigFactory/parseResourcesAnySyntax file)
+        (#(if config (.getConfig % config) %))
+        (#(if-not local
+            (.withFallback %
+              (ConfigFactory/parseString
+                (format "akka.remote.netty.port = %d
+                        akka.remote.netty.hostname = \"%s\"
+                        akka.actor.provider = akka.remote.RemoteActorRefProvider"
+                        port hostname)))
+            %))))))
 
 (defmacro !
   "Sends the msg value as a message to target, or to current sender if target
