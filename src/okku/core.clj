@@ -9,10 +9,11 @@
   "Creates a round-robin router with n replicas."
   (RoundRobinRouter. n))
 
-(defn actor-system [name & {:keys [config file port local]
+(defn actor-system [name & {:keys [config file port local hostname]
                             :or {file "application"
                                  config false
                                  port 2552
+                                 hostname "127.0.0.1"
                                  local false}}]
   "Creates a new actor system.
   config should be the name of the corresponding section in the application.conf file.
@@ -28,7 +29,9 @@
             (.withFallback %
               (ConfigFactory/parseString
                 (format "akka.remote.netty.port = %d
-                        akka.actor.provider = akka.remote.RemoteActorRefProvider" port)))
+                        akka.remote.netty.hostname = \"%s\"
+                        akka.actor.provider = akka.remote.RemoteActorRefProvider"
+                        port hostname)))
             %))))))
 
 (defmacro !
