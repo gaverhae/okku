@@ -1,7 +1,8 @@
 (ns okku.core
   (import [akka.actor ActorRef ActorSystem Props UntypedActor
-           UntypedActorFactory]
+           UntypedActorFactory Deploy Address AddressFromURIString]
           [akka.routing RoundRobinRouter]
+          [akka.remote RemoteScope]
           [com.typesafe.config ConfigFactory])
   (require [clojure.walk :as w]))
 
@@ -44,9 +45,24 @@
   `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
          :else (.unhandled ~'this ~dv)))
 
-(defmacro spawn [name args & {c :in r :router n :name}]
+(defmacro spawn [name args & {c :in r :router n :name d :deploy-on}]
   (let [c (if c c '(.getContext this))
-        p (#(if r `(.withRouter ~% ~r) %) (cons name args))]
+        p (-> (cons name args)
+            (#(if r `(.withRouter ~% ~r) %))
+            (#(if d `(.withDeploy ~% (Deploy. (RemoteScope. (cond (instance? String ~d)
+                                                                  (AddressFromURIString/parse ~d)
+                                                                  (sequential? ~d)
+                                                                  (condp = (count ~d)
+                                                                    3 (Address. "akka"
+                                                                                (nth ~d 0)
+                                                                                (nth ~d 1)
+                                                                                (nth ~d 2))
+                                                                    4 (Address. (nth ~d 0)
+                                                                                (nth ~d 1)
+                                                                                (nth ~d 2)
+                                                                                (nth ~d 3))
+                                                                    (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements")))
+                                                                  :else (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements")))))) %)))]
     (if n `(.actorOf ~c ~p ~n)
       `(.actorOf ~c ~p))))
 
