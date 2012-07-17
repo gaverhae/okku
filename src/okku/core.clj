@@ -66,9 +66,20 @@
     (if n `(.actorOf ~c ~p ~n)
       `(.actorOf ~c ~p))))
 
-(defn look-up [address & {s :in}]
+(defn look-up [address & {s :in n :name}]
   (if-not s (throw (IllegalArgumentException. "okku.core/look-up needs an :in argument")))
-  (.actorFor s address))
+  (let [[prot sys hn port & path] (clojure.string/split address #"://|@|:|/")
+        {cprot "protocol" csys "actor-system" chn "hostname" cport "port"
+         cpath "path"} (get-in (.root (.. s settings config)) ["okku" "lookup" (str "/" n)])
+        [cprot csys chn cport cpath] (map #(if % (.unwrapped %)) [cprot csys chn cport cpath])
+        path (clojure.string/join "/" path)
+        cpath (if cpath (if (= (first path) \/) cpath (str "user/" cpath)))
+        address (str (or cprot prot) "://"
+                     (or csys sys) "@"
+                     (or chn hn) ":"
+                     (or cport port) "/"
+                     (or cpath path))]
+    (.actorFor s address)))
 
 (defmacro stop []
   '(.stop (.getContext this) (.getSelf this)))
