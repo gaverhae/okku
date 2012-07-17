@@ -14,9 +14,9 @@ documentation of either Akka or Erlang.
 
 The main goal of the Okku library is to make actor creation and management as
 painless as possible. Apart from that, Okku strives to be as thin a wrapper as
-possible; for example, Okku functions yield ans manipulate unwrapped Akka
-objets, and Okku tries to stay conceptually close to the Akka model. This means
-that users of Okku should be able to refer directly to the [Akka
+possible; for example, Okku functions yield and manipulate unwrapped Akka
+objects, and Okku tries to stay conceptually close to the Akka model. This
+means that users of Okku should be able to refer directly to the [Akka
 documentation](http://akka.io/docs/) for information on how to use Okku.
 
 The main caveat is that Okku assumes that the user is mainly interested in
@@ -41,10 +41,10 @@ thought of as the roots of the actor hierarchy within an application.
 ## Creating an actor with Okku
 
 The first step in creating an actor is to define its behaviour. This is done
-through the ``defactor`` macro, which defines a function that yields an
-instance of ``akka.actor.Props`` (that could then be passed to ``.actorOf`` to
-create an actor from Akka). It is basically a wrapper around ``proxy``, with a
-few convenience macros to use frequently accessed actor functionalities.
+through the ``actor`` macro, which yields an ``akka.actor.Props`` object (that
+could then be passed to ``.actorOf`` to create an actor from Akka). It is
+basically a wrapper around ``proxy``, with a few convenience macros to use
+frequently accessed actor functionalities.
 
 (In the next release, this will point to the rest of the documentation, which
 does not exist yet. In the mean time, most of these features are exhibited in
@@ -52,15 +52,15 @@ the two tutorials, [pi](https://github.com/gaverhae/okku-pi) and
 [remote](https://github.com/gaverhae/okku-remote).)
 
 The second step is to use the ``spawn`` macro, which takes an "actor" (a
-function defined by defactor), its arguments, and a few named arguments to
-create the actor. If no ``:in`` argument is passed, the new actor is spawned as
-a child to the "current" actor (this call will obviously fail if done from
-outside an actor). ``spawn`` is also used to create an actor on a remote
-system.
+``Props`` object as yielded by the ``actor`` macro) ,and a few named arguments
+to create the actor. If no ``:in`` argument is passed, the new actor is spawned
+as a child of the "current" actor (which means that the ``:in`` argument is
+required if called from outside ofan actor, though that can only be detected at
+runtime). ``spawn`` is also used to create an actor on a remote system.
 
 (Again, in the meantime, see the two tutorials for more information.)
 
-# Configuration through configuration file
+## Configuration through configuration file
 
 Configuration through ``application.conf`` is supported by Akka, and thus by
 Okku. See the [Akka documentation](http://akka.io/docs/) for details.
@@ -86,7 +86,7 @@ okku.lookup.<actor path> {
 If the path does not begin with a "/", Okku will automaticall add "/user/" in
 front of it.
 
-## License
+# License
 
 Copyright (C) 2012 Gary Verhaegen.
 

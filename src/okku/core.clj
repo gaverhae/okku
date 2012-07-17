@@ -45,9 +45,9 @@
   `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
          :else (.unhandled ~'this ~dv)))
 
-(defmacro spawn [name args & {c :in r :router n :name d :deploy-on}]
+(defmacro spawn [act & {c :in r :router n :name d :deploy-on}]
   (let [c (if c c '(.getContext this))
-        p (-> (cons name args)
+        p (-> act
             (#(if r `(.withRouter ~% ~r) %))
             (#(if d `(.withDeploy ~% (Deploy. (RemoteScope. (cond (instance? String ~d)
                                                                   (AddressFromURIString/parse ~d)
@@ -87,17 +87,8 @@
 (defmacro shutdown []
   '(-> this .getContext .system .shutdown))
 
-(defn extract-let [forms]
-  (if (and (= (count forms) 1)
-           (= (first (first forms)) 'let))
-    [(second (first forms)) (drop 2 (first forms))]
-    [nil forms]))
-
-(defmacro defactor [aname [& arglist] & forms]
-  (let [[binds forms] (extract-let forms)]
-    `(defn ~aname [~@arglist]
-       (Props. (proxy [UntypedActorFactory] []
-                 (~'create []
-                   (let [~@binds]
-                     (proxy [UntypedActor] []
-                       ~@forms))))))))
+(defmacro actor [& forms]
+  `(Props. (proxy [UntypedActorFactory] []
+             (~'create []
+               (proxy [UntypedActor] []
+                 ~@forms)))))
