@@ -1,4 +1,4 @@
-(defproject org.clojure.gaverhae/okku "0.1.0"
+(defproject org.clojure.gaverhae/okku "0.1.1-SNAPSHOT"
   :description "Clojure wrapper around the Akka library."
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [com.typesafe.akka/akka-actor "2.0.2"]

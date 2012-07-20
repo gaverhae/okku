@@ -86,6 +86,13 @@ okku.lookup.<actor path> {
 If the path does not begin with a "/", Okku will automaticall add "/user/" in
 front of it.
 
+# Roadmap
+
+- 0.1.1: Refactor ``okku.core``, add tests, add documentation.
+- 0.2.0: Add support for using Java (and Akka?) classes as Actor templates
+- Wait for lots of bug reports and feature requests...
+
+
 # License
 
 Copyright (C) 2012 Gary Verhaegen.
