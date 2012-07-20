@@ -1,3 +1,9 @@
+# Leiningen
+
+```clojure
+[org.clojure.gaverhae/okku "0.1.0"]
+```
+
 # Introduction
 
 Okku is a Clojure wrapper for the Akka library. Akka is an erlang-inspired
