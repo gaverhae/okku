@@ -1,10 +1,10 @@
 (ns okku.core
-  (import [akka.actor ActorRef ActorSystem Props UntypedActor
-           UntypedActorFactory Deploy Address AddressFromURIString]
-          [akka.routing RoundRobinRouter]
-          [akka.remote RemoteScope]
-          [com.typesafe.config ConfigFactory])
-  (require [clojure.walk :as w]))
+  (:import [akka.actor ActorRef ActorSystem Props UntypedActor
+            UntypedActorFactory Deploy Address AddressFromURIString]
+           [akka.routing RoundRobinRouter]
+           [akka.remote RemoteScope]
+           [com.typesafe.config ConfigFactory])
+  (:require [clojure.walk :as w]))
 
 (defn round-robin-router [n]
   "Creates a round-robin router with n replicas."
