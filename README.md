@@ -1,7 +1,7 @@
 # Leiningen
 
 ```clojure
-[org.clojure.gaverhae/okku "0.1.0"]
+[org.clojure.gaverhae/okku "0.1.1"]
 ```
 
 # Introduction
