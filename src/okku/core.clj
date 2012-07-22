@@ -1,4 +1,6 @@
 (ns okku.core
+  "Library to facilitate the definition and creation of Akka actors from
+  Clojure."
   (:import [akka.actor ActorRef ActorSystem Props UntypedActor
             UntypedActorFactory Deploy Address AddressFromURIString]
            [akka.routing RoundRobinRouter]
@@ -10,19 +12,27 @@
   "Creates a round-robin router with n replicas."
   [n] (RoundRobinRouter. n))
 
-(defn- base-remote-config [port hostname]
+(defn- base-remote-config
+  "Defines the minimal set of options required to use Akka in a distributed
+  setting."
+  [port hostname]
   (ConfigFactory/parseString
     (format "akka.remote.netty.port = %d
             akka.remote.netty.hostname = \"%s\"
             akka.actor.provider = akka.remote.RemoteActorRefProvider"
             port hostname)))
 
-(defn- restrict-config [config-object path]
+(defn- restrict-config
+  "Restricts a ConfigObject to the given path; useful to separate the configuration
+  file in multiple sections."
+  [config-object path]
   (if path
     (.getConfig config-object path)
     config-object))
 
-(defn- remote-config [config-object local? port hostname]
+(defn- remote-config
+  "Used to set the config and hostname parts of a config object."
+  [config-object local? port hostname]
   (if-not local?
     (.withFallback config-object (base-remote-config port hostname))
     config-object))
@@ -62,7 +72,9 @@
   `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
          :else (.unhandled ~'this ~dv)))
 
-(defn- with-router [actor-spec r]
+(defn- with-router
+  "Adds a router option to a Props object."
+  [actor-spec r]
   (if r
     `(.withRouter ~actor-spec ~r)
     actor-spec))
@@ -81,6 +93,7 @@
          :else (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements"))))
 
 (defn- with-deploy
+  "Adds a deploy option to a Props object."
   [actor-spec address]
   (if address
     `(.withDeploy ~actor-spec (Deploy. (RemoteScope. ~(parse-address address))))
@@ -114,6 +127,8 @@
                 (clojure.string/join "/" (a 4)))))
 
 (defn- get-config-lookup
+  "Extracts the configuration for an actor lookup from the configuration file.
+  Returns it as a vector in the format expected by merge-addresses and vec-to-string."
   [config name]
   (let [c (get-in config ["okku" "lookup" (str "/" name)])
         extract (fn [k] (if-let [v (get c k)] (.unwrapped v)))]
@@ -142,13 +157,19 @@
         address (vec-to-string address-v)]
     (.actorFor s address)))
 
-(defmacro stop []
-  '(.stop (.getContext this) (.getSelf this)))
+(defmacro stop
+  "Simple helper macro to access the stop method of the current actor."
+  [] '(.stop (.getContext this) (.getSelf this)))
 
-(defmacro shutdown []
-  '(-> this .getContext .system .shutdown))
+(defmacro shutdown
+  "Simple helper macro to send the shutdown signal to theenclosing ActorSystem."
+  [] '(-> this .getContext .system .shutdown))
 
-(defmacro actor [& forms]
+(defmacro actor
+  "Macro used to define an actor. Actually returns a Props object that can be
+  passed to the .actorOf method of an ActorSystem, or similarly that can be used
+  as the first argument to spawn."
+  [& forms]
   `(Props. (proxy [UntypedActorFactory] []
              (~'create []
                (proxy [UntypedActor] []
