@@ -73,12 +73,10 @@
   `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
          :else (.unhandled ~'this ~dv)))
 
-(defn- with-router
+(defn with-router
   "Adds a router option to a Props object."
   [actor-spec r]
-  (if r
-    `(.withRouter ~actor-spec ~r)
-    actor-spec))
+  (.withRouter actor-spec r))
 
 (defn parse-address
   "Returns an akka.actor.Address from either a string representing the address
@@ -93,12 +91,10 @@
                            (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements")))
         :else (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements"))))
 
-(defn- with-deploy
+(defn with-deploy
   "Adds a deploy option to a Props object."
   [actor-spec address]
-  (if address
-    `(.withDeploy ~actor-spec (Deploy. (RemoteScope. (parse-address ~address))))
-    actor-spec))
+  (.withDeploy actor-spec (Deploy. (RemoteScope. (parse-address address)))))
 
 (defmacro spawn
   "Spawns a new actor (side-effect) and returns an ActorRef to it. The first
@@ -112,9 +108,10 @@
   - `:deploy-on` must be the address of a remote ActorSystem in one of the three forms accepted by parse-address; the actor is remotely spawned on the remote system (as a root actor)."
   [actor-spec & {c :in r :router n :name d :deploy-on
                  :or {c '(.getContext this)}}]
-  (let [p (-> actor-spec
-            (with-router r)
-            (with-deploy d))]
+  (let [p (reduce (fn [acc [opt f]]
+                    (if opt `(~f ~acc ~opt) acc))
+                  actor-spec `([~r with-router]
+                               [~d with-deploy]))]
     (if n `(.actorOf ~c ~p ~n)
       `(.actorOf ~c ~p))))
 

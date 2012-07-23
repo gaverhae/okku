@@ -11,14 +11,11 @@
   (are [x y] (= (macroexpand-1 (quote x)) y)
        (okku.core/spawn act) '(.actorOf (.getContext this) act)
        (okku.core/spawn act :in asys :router router :name name)
-       '(.actorOf asys (.withRouter act router) name)
+       '(.actorOf asys (okku.core/with-router act router) name)
        (okku.core/spawn act :deploy-on addr)
        '(.actorOf
           (.getContext this)
-          (.withDeploy act
-                       (akka.actor.Deploy.
-                         (akka.remote.RemoteScope.
-                           (okku.core/parse-address addr)))))))
+          (okku.core/with-deploy act addr))))
 
 (deftest test-dispatch-on
   (are [x y] (= (macroexpand-1 x) y)
