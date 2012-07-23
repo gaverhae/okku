@@ -3028,7 +3028,7 @@ net.brehaut.ClojureTools = (function (SH) {
     build_tree: build_tree
   };
 })(SyntaxHighlighter);
-</script><title>org.clojure.gaverhae/okku -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">org.clojure.gaverhae/okku</h1><h2 class="project-version">0.1.1</h2><br /><p>Clojure wrapper around the Akka library.</p>
+</script><title>org.clojure.gaverhae/okku -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">org.clojure.gaverhae/okku</h1><h2 class="project-version">0.1.2</h2><br /><p>Clojure wrapper around the Akka library.</p>
 </div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.4.0</td></tr><tr><td class="dep-name">com.typesafe.akka/akka-actor</td><td class="dotted"><hr /></td><td class="dep-version">2.0.2</td></tr><tr><td class="dep-name">com.typesafe.akka/akka-remote</td><td class="dotted"><hr /></td><td class="dep-version">2.0.2</td></tr><tr><td class="dep-name">com.typesafe.akka/akka-kernel</td><td class="dotted"><hr /></td><td class="dep-version">2.0.2</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#okku.core">okku.core</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#okku.core" name="okku.core"><h1 class="project-name">okku.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Library to facilitate the definition and creation of Akka actors from
   Clojure.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns okku.core
@@ -3091,27 +3091,23 @@ net.brehaut.ClojureTools = (function (SH) {
   [dv &amp; forms]
   `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
          :else (.unhandled ~'this ~dv)))</pre></td></tr><tr><td class="docs"><p>Adds a router option to a Props object.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- with-router
+</td><td class="codes"><pre class="brush: clojure">(defn with-router
   [actor-spec r]
-  (if r
-    `(.withRouter ~actor-spec ~r)
-    actor-spec))</pre></td></tr><tr><td class="docs"><p>Returns an akka.actor.Address from either a string representing the address
+  (.withRouter actor-spec r))</pre></td></tr><tr><td class="docs"><p>Returns an akka.actor.Address from either a string representing the address
   or a four (or three) element sequence containing the four parts of an
   address: the protocol (defaults to "akka" if it's a 3 elements sequence),
   the ActorSystem's name, the hostname and the port.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn parse-address
   [a]
-  `(cond (instance? String ~a) (AddressFromURIString/parse ~a)
-         (sequential? ~a) (condp = (count ~a)
-                           3 (Address. &quot;akka&quot; (nth ~a 0) (nth ~a 1) (nth ~a 2))
-                           4 (Address. (nth ~a 0) (nth ~a 1) (nth ~a 2) (nth ~a 3))
+  (cond (instance? String a) (AddressFromURIString/parse a)
+        (sequential? a) (condp = (count a)
+                           3 (Address. &quot;akka&quot; (nth a 0) (nth a 1) (nth a 2))
+                           4 (Address. (nth a 0) (nth a 1) (nth a 2) (nth a 3))
                            (throw (IllegalArgumentException. &quot;spawn:deploy-on should be either a String or a sequence of 3 or 4 elements&quot;)))
-         :else (throw (IllegalArgumentException. &quot;spawn:deploy-on should be either a String or a sequence of 3 or 4 elements&quot;))))</pre></td></tr><tr><td class="docs"><p>Adds a deploy option to a Props object.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn- with-deploy
+        :else (throw (IllegalArgumentException. &quot;spawn:deploy-on should be either a String or a sequence of 3 or 4 elements&quot;))))</pre></td></tr><tr><td class="docs"><p>Adds a deploy option to a Props object.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn with-deploy
   [actor-spec address]
-  (if address
-    `(.withDeploy ~actor-spec (Deploy. (RemoteScope. ~(parse-address address))))
-    actor-spec))</pre></td></tr><tr><td class="docs"><p>Spawns a new actor (side-effect) and returns an ActorRef to it. The first
+  (.withDeploy actor-spec (Deploy. (RemoteScope. (parse-address address)))))</pre></td></tr><tr><td class="docs"><p>Spawns a new actor (side-effect) and returns an ActorRef to it. The first
   argument must be a Props object (such as created by the actor macro).</p>
 
 <p>  Accepts the following options:</p>
@@ -3125,9 +3121,10 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(defmacro spawn
   [actor-spec &amp; {c :in r :router n :name d :deploy-on
                  :or {c '(.getContext this)}}]
-  (let [p (-&gt; actor-spec
-            (with-router r)
-            (with-deploy d))]
+  (let [p (reduce (fn [acc [opt f]]
+                    (if opt `(~f ~acc ~opt) acc))
+                  actor-spec `([~r with-router]
+                               [~d with-deploy]))]
     (if n `(.actorOf ~c ~p ~n)
       `(.actorOf ~c ~p))))</pre></td></tr><tr><td class="docs"><p>Converts an address in string form to the corresponding vector form</p>
 </td><td class="codes"><pre class="brush: clojure">(defn- string-to-vec

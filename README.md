@@ -1,7 +1,7 @@
 # Leiningen
 
 ```clojure
-[org.clojure.gaverhae/okku "0.1.1"]
+[org.clojure.gaverhae/okku "0.1.2"]
 ```
 
 # Introduction
@@ -64,8 +64,8 @@ as a child of the "current" actor (which means that the ``:in`` argument is
 required if called from outside of an actor, though that can only be detected
 at runtime). ``spawn`` is also used to create an actor on a remote system.
 
-With all that said, here is an example code to illustrate the basics (assumes
-you have ``:use``ed ``okku.core``):
+With all that said, here is an example code to illustrate the basics, provided
+the Okku jar is in your classpath:
 ```clojure
 (use 'okku.core)
 (let [as (actor-system "test")
