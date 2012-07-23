@@ -67,8 +67,9 @@ at runtime). ``spawn`` is also used to create an actor on a remote system.
 With all that said, here is an example code to illustrate the basics (assumes
 you have ``:use``ed ``okku.core``):
 ```clojure
+(use 'okku.core)
 (let [as (actor-system "test")
-     [echo-actor (spawn (actor (onReceive [msg]
+      echo-actor (spawn (actor (onReceive [msg]
                                  (println msg)))
                         :in as)]
   (.tell echo-actor "Testing...")
