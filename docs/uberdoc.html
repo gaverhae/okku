@@ -3058,13 +3058,16 @@ net.brehaut.ClojureTools = (function (SH) {
   [config-object local? port hostname]
   (if-not local?
     (.withFallback config-object (base-remote-config port hostname))
-    config-object))</pre></td></tr><tr><td class="docs"><p>Creates a new actor system.
-  name is used in the path to any actor in this system.
-  :config should be the name of the corresponding section in the config file.
-  :file should be the name of the config file (.conf appended by the library).
-  :port should be the port number for this ActorSystem (lower priority than config file).
-  :hostname should be the hostname for this ActorSystem (lower priority than config file).
-  :local creates a local actor system (port and hostname options are then ignored; default to false).</p>
+    config-object))</pre></td></tr><tr><td class="docs"><p>Creates a new actor system.</p>
+
+<ul>
+<li><code>name</code> is used in the path to any actor in this system.</li>
+<li><code>:config</code> should be the name of the corresponding section in the config file.</li>
+<li><code>:file</code> should be the name of the config file (.conf appended by the library).</li>
+<li><code>:port</code> should be the port number for this ActorSystem (lower priority than config file).</li>
+<li><code>:hostname</code> should be the hostname for this ActorSystem (lower priority than config file).</li>
+<li><code>:local</code> creates a local actor system (port and hostname options are then ignored; default to false).</li>
+</ul>
 </td><td class="codes"><pre class="brush: clojure">(defn actor-system
   [name &amp; {:keys [config file port local hostname]
            :or {file &quot;application&quot;
@@ -3082,7 +3085,7 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(defmacro !
   ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
   ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))</pre></td></tr><tr><td class="docs"><p>Bascially expands to a cond with an equality test on the dispatch value dv,
-  then adds the final :else form to call the .unhandled method on self for
+  then adds the final <code>:else</code> form to call the <code>.unhandled</code> method on self for
   compatibility with Akka expectations.</p>
 </td><td class="codes"><pre class="brush: clojure">(defmacro dispatch-on
   [dv &amp; forms]
@@ -3108,13 +3111,17 @@ net.brehaut.ClojureTools = (function (SH) {
   [actor-spec address]
   (if address
     `(.withDeploy ~actor-spec (Deploy. (RemoteScope. ~(parse-address address))))
-    actor-spec))</pre></td></tr><tr><td class="docs"><p>Spawns a new actor (side-effect) and returns an ActorRef to it. First
-  argument must be a Props object (such as created by the actor macro). Accepts
-  the following options:
-  :in designates the ActorSystem in which to create the ActorRef. If no :in option is given, the new actor is created in the context of the current one.
-  :router specifies a Router object to serve as a router for the returned ActorRef (see Akka documentation).
-  :name is used for both the full (logical) path of the returned ActorRef and for looking-up the relevant configuration concerning the to-be-created Actor (generated if none given).
-  :deploy-on must be the address of a remote ActorSystem in one of the three forms accepted by parse-address; the actor is remotely spawned on the remote system (as a root actor).</p>
+    actor-spec))</pre></td></tr><tr><td class="docs"><p>Spawns a new actor (side-effect) and returns an ActorRef to it. The first
+  argument must be a Props object (such as created by the actor macro).</p>
+
+<p>  Accepts the following options:</p>
+
+<ul>
+<li><code>:in</code> designates the ActorSystem in which to create the ActorRef. If no :in option is given, the new actor is created in the context of the current one.</li>
+<li><code>:router</code> specifies a Router object to serve as a router for the returned ActorRef (see Akka documentation).</li>
+<li><code>:name is</code> used for both the full (logical) path of the returned ActorRef and for looking-up the relevant configuration concerning the to-be-created Actor (generated if none given).</li>
+<li><code>:deploy-on</code> must be the address of a remote ActorSystem in one of the three forms accepted by parse-address; the actor is remotely spawned on the remote system (as a root actor).</li>
+</ul>
 </td><td class="codes"><pre class="brush: clojure">(defmacro spawn
   [actor-spec &amp; {c :in r :router n :name d :deploy-on
                  :or {c '(.getContext this)}}]
@@ -3141,7 +3148,7 @@ net.brehaut.ClojureTools = (function (SH) {
        (let [p (clojure.string/split ps #&quot;/&quot;)]
          (if (= (first p) &quot;&quot;)
            (rest p)
-           (cons &quot;user&quot; p))))]))</pre></td></tr><tr><td class="docs"><p>merges two addresses given in vector form [prot sys hn port &amp; path]</p>
+           (cons &quot;user&quot; p))))]))</pre></td></tr><tr><td class="docs"><p>Merges two addresses given in vector form <code>[prot sys hn port &amp; path]</code>.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn- merge-addresses
   [a1 a2] (map #(if % % %2) a1 a2))</pre></td></tr><tr><td class="docs"><p>Returns an ActorRef for the specified actor path.
   :in specifies the ActorSystem in which to create the ActorRef

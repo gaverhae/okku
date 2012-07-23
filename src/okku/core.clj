@@ -39,12 +39,13 @@
 
 (defn actor-system
   "Creates a new actor system.
-  name is used in the path to any actor in this system.
-  :config should be the name of the corresponding section in the config file.
-  :file should be the name of the config file (.conf appended by the library).
-  :port should be the port number for this ActorSystem (lower priority than config file).
-  :hostname should be the hostname for this ActorSystem (lower priority than config file).
-  :local creates a local actor system (port and hostname options are then ignored; default to false)."
+
+  - `name` is used in the path to any actor in this system.
+  - `:config` should be the name of the corresponding section in the config file.
+  - `:file` should be the name of the config file (.conf appended by the library).
+  - `:port` should be the port number for this ActorSystem (lower priority than config file).
+  - `:hostname` should be the hostname for this ActorSystem (lower priority than config file).
+  - `:local` creates a local actor system (port and hostname options are then ignored; default to false)."
   [name & {:keys [config file port local hostname]
            :or {file "application"
                 config false
@@ -66,7 +67,7 @@
 
 (defmacro dispatch-on
   "Bascially expands to a cond with an equality test on the dispatch value dv,
-  then adds the final :else form to call the .unhandled method on self for
+  then adds the final `:else` form to call the `.unhandled` method on self for
   compatibility with Akka expectations."
   [dv & forms]
   `(cond ~@(mapcat (fn [[v f]] `[(= ~dv ~v) ~f]) (partition 2 forms))
@@ -100,13 +101,15 @@
     actor-spec))
 
 (defmacro spawn
-  "Spawns a new actor (side-effect) and returns an ActorRef to it. First
-  argument must be a Props object (such as created by the actor macro). Accepts
-  the following options:
-  :in designates the ActorSystem in which to create the ActorRef. If no :in option is given, the new actor is created in the context of the current one.
-  :router specifies a Router object to serve as a router for the returned ActorRef (see Akka documentation).
-  :name is used for both the full (logical) path of the returned ActorRef and for looking-up the relevant configuration concerning the to-be-created Actor (generated if none given).
-  :deploy-on must be the address of a remote ActorSystem in one of the three forms accepted by parse-address; the actor is remotely spawned on the remote system (as a root actor)."
+  "Spawns a new actor (side-effect) and returns an ActorRef to it. The first
+  argument must be a Props object (such as created by the actor macro).
+
+  Accepts the following options:
+
+  - `:in` designates the ActorSystem in which to create the ActorRef. If no :in option is given, the new actor is created in the context of the current one.
+  - `:router` specifies a Router object to serve as a router for the returned ActorRef (see Akka documentation).
+  - `:name is` used for both the full (logical) path of the returned ActorRef and for looking-up the relevant configuration concerning the to-be-created Actor (generated if none given).
+  - `:deploy-on` must be the address of a remote ActorSystem in one of the three forms accepted by parse-address; the actor is remotely spawned on the remote system (as a root actor)."
   [actor-spec & {c :in r :router n :name d :deploy-on
                  :or {c '(.getContext this)}}]
   (let [p (-> actor-spec
@@ -141,7 +144,7 @@
            (cons "user" p))))]))
 
 (defn- merge-addresses
-  "merges two addresses given in vector form [prot sys hn port & path]"
+  "Merges two addresses given in vector form `[prot sys hn port & path]`."
   [a1 a2] (map #(if % % %2) a1 a2))
 
 (defn look-up
