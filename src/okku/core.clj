@@ -86,18 +86,18 @@
   address: the protocol (defaults to \"akka\" if it's a 3 elements sequence),
   the ActorSystem's name, the hostname and the port."
   [a]
-  `(cond (instance? String ~a) (AddressFromURIString/parse ~a)
-         (sequential? ~a) (condp = (count ~a)
-                           3 (Address. "akka" (nth ~a 0) (nth ~a 1) (nth ~a 2))
-                           4 (Address. (nth ~a 0) (nth ~a 1) (nth ~a 2) (nth ~a 3))
+  (cond (instance? String a) (AddressFromURIString/parse a)
+        (sequential? a) (condp = (count a)
+                           3 (Address. "akka" (nth a 0) (nth a 1) (nth a 2))
+                           4 (Address. (nth a 0) (nth a 1) (nth a 2) (nth a 3))
                            (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements")))
-         :else (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements"))))
+        :else (throw (IllegalArgumentException. "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements"))))
 
 (defn- with-deploy
   "Adds a deploy option to a Props object."
   [actor-spec address]
   (if address
-    `(.withDeploy ~actor-spec (Deploy. (RemoteScope. ~(parse-address address))))
+    `(.withDeploy ~actor-spec (Deploy. (RemoteScope. (parse-address ~address))))
     actor-spec))
 
 (defmacro spawn

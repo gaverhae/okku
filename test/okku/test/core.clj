@@ -18,35 +18,7 @@
           (.withDeploy act
                        (akka.actor.Deploy.
                          (akka.remote.RemoteScope.
-                           (clojure.core/cond
-                             (clojure.core/instance? java.lang.String addr) (akka.actor.AddressFromURIString/parse
-                                                                              addr)
-                             (clojure.core/sequential? addr) (clojure.core/condp
-                                                               clojure.core/=
-                                                               (clojure.core/count addr)
-                                                               3
-                                                               (akka.actor.Address.
-                                                                 "akka"
-                                                                 (clojure.core/nth addr 0)
-                                                                 (clojure.core/nth addr 1)
-                                                                 (clojure.core/nth
-                                                                   addr
-                                                                   2))
-                                                               4
-                                                               (akka.actor.Address.
-                                                                 (clojure.core/nth addr 0)
-                                                                 (clojure.core/nth addr 1)
-                                                                 (clojure.core/nth addr 2)
-                                                                 (clojure.core/nth
-                                                                   addr
-                                                                   3))
-                                                               (throw
-                                                                 (java.lang.IllegalArgumentException.
-                                                                   "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements")))
-                             :else (throw
-                                     (java.lang.IllegalArgumentException.
-                                       "spawn:deploy-on should be either a String or a sequence of 3 or 4 elements")))))))
-       ))
+                           (okku.core/parse-address addr)))))))
 
 (deftest test-dispatch-on
   (are [x y] (= (macroexpand-1 x) y)
