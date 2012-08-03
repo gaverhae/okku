@@ -6,7 +6,7 @@
            [akka.routing RoundRobinRouter]
            [akka.remote RemoteScope]
            [com.typesafe.config ConfigFactory])
-  (:require [clojure.walk :as w]))
+  (:require clojure.string))
 
 (defn round-robin-router
   "Creates a round-robin router with n replicas."
