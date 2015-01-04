@@ -2,7 +2,8 @@
   "Library to facilitate the definition and creation of Akka actors from
   Clojure."
   (:import [akka.actor ActorRef ActorSystem Props UntypedActor
-            UntypedActorFactory Deploy Address AddressFromURIString]
+            Deploy Address AddressFromURIString]
+           [akka.japi Creator]
            [akka.routing RoundRobinRouter]
            [akka.remote RemoteScope]
            [com.typesafe.config ConfigFactory])
@@ -170,7 +171,7 @@
   passed to the .actorOf method of an ActorSystem, or similarly that can be used
   as the first argument to spawn."
   [& forms]
-  `(Props. (proxy [UntypedActorFactory] []
+  `(Props/create ~UntypedActor (proxy [Creator] []
              (~'create []
                (proxy [UntypedActor] []
                  ~@forms)))))
