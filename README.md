@@ -1,12 +1,15 @@
 # Leiningen
 
 ```clojure
-[org.clojure.gaverhae/okku "0.1.3"]
+[org.clojure.gaverhae/okku "0.1.4"]
 ```
 
 Okku is primarily developped and tested on Clojure 1.4. It has been
 occasionally tested on 1.2 and 1.3, and it seems to work fine. Do not hesitate
 to report any incompatibility.
+
+Okku has recently been updated to rely on Akka `2.3.8`. This has not been
+extensively tested; please report any problem.
 
 # Introduction
 
