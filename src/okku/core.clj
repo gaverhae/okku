@@ -18,8 +18,8 @@
   setting."
   [port hostname]
   (ConfigFactory/parseString
-    (format "akka.remote.netty.port = %d
-            akka.remote.netty.hostname = \"%s\"
+    (format "akka.remote.netty.tcp.port = %d
+            akka.remote.netty.tcp.hostname = \"%s\"
             akka.actor.provider = akka.remote.RemoteActorRefProvider"
             port hostname)))
 
