@@ -63,8 +63,8 @@
 (defmacro !
   "Sends the msg value as a message to target, or to current sender if target
   is not specified. Can only be used inside an actor."
-  ([msg] `(.sendMessage (.getSender ~'this) ~msg (.getSelf ~'this)))
-  ([target msg] `(.sendMessage ~target ~msg (.getSelf ~'this))))
+  ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
+  ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
 
 (defmacro dispatch-on
   "Bascially expands to a cond with an equality test on the dispatch value dv,
