@@ -1,4 +1,4 @@
-(defproject org.clojure.gaverhae/okku "0.1.4"
+(defproject org.clojure.gaverhae/okku "0.1.5-SNAPSHOT"
   :description "Clojure wrapper around the Akka library."
   :url "https://github.com/gaverhae/okku"
   :license {:name "Eclipse Public License"
