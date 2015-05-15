@@ -79,8 +79,8 @@ the Okku jar is in your classpath:
       echo-actor (spawn (actor (onReceive [msg]
                                  (println msg)))
                         :in as)]
-  (.tell echo-actor "Testing...")
-  (.tell echo-actor ["more" {"complex" "object"}]))
+  (.tell echo-actor "Testing..." echo-actor)
+  (.tell echo-actor ["more" {"complex" "object"}] echo-actor))
 ```
 
 One restriction of the Akka model is that messages between actors have to be
