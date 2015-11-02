@@ -6,6 +6,10 @@
            [akka.japi Creator]
            [akka.routing RoundRobinRouter]
            [akka.remote RemoteScope]
+           [akka.pattern Patterns]
+           [scala.concurrent Await]
+           [scala.concurrent.duration Duration]
+           [java.util.concurrent TimeUnit]
            [com.typesafe.config ConfigFactory])
   (:require clojure.string))
 
@@ -65,6 +69,30 @@
   is not specified. Can only be used inside an actor."
   ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
   ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
+
+
+(defn to-millis [duration]
+  (.convert TimeUnit/MILLISECONDS
+	    (:value duration)
+	    (:unit duration)))
+
+(defn ask
+  "Use the Akka ask pattern. Returns a future object
+  which can be waited on by calling 'wait'"
+  [^ActorRef actor msg timeout]
+     (Patterns/ask actor msg (to-millis timeout)))
+
+(def ? ask)
+
+(defn wait
+  "Wait on the specified Scala Future to complete and return its result with an
+optional timeout duration."
+  ([future]
+     (Await/result future (Duration/Inf)))
+  ([future duration]
+     (Await/result future (Duration/create
+			   (:value duration)
+			   (:unit duration)))))
 
 (defmacro dispatch-on
   "Bascially expands to a cond with an equality test on the dispatch value dv,
