@@ -8,7 +8,6 @@
            [akka.remote RemoteScope]
            [akka.pattern Patterns]
            [scala.concurrent Await]
-           [scala.concurrent.duration Duration]
            [java.util.concurrent TimeUnit]
            [com.typesafe.config ConfigFactory])
   (:require clojure.string))
@@ -71,17 +70,12 @@
   ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
 
 
-(defn to-millis [duration]
-  (.convert TimeUnit/MILLISECONDS
-	    (:value duration)
-	    (:unit duration)))
-
 (defn ask
   "Use the Akka ask pattern. Returns a future object
   which can be waited on by calling 'wait'"
   [^ActorRef actor msg timeout]
   (let [result (promise)]
-     (.map (Patterns/ask actor msg (to-millis timeout)))))
+     (.map (Patterns/ask actor msg timeout))))
 
 (def ? ask)
 
