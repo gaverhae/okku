@@ -80,7 +80,8 @@
   "Use the Akka ask pattern. Returns a future object
   which can be waited on by calling 'wait'"
   [^ActorRef actor msg timeout]
-     (Patterns/ask actor msg (to-millis timeout)))
+  (let [result (promise)]
+     (.map (Patterns/ask actor msg (to-millis timeout)))))
 
 (def ? ask)
 

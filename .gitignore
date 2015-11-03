@@ -10,3 +10,5 @@
 /bin/
 /.classpath
 /.project
+/.nrepl-port
+/.settings
