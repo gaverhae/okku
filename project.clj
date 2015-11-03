@@ -7,5 +7,4 @@
                  [com.typesafe.akka/akka-actor_2.11 "2.3.14"]
                  [com.typesafe.akka/akka-remote_2.11 "2.3.14"]
                  [com.typesafe.akka/akka-kernel_2.11 "2.3.14"]]
-  :repositories {"Typesafe Repository" "http://repo.typesafe.com/typesafe/releases/"}
-  )
+  :repositories {"Typesafe Repository" "http://repo.typesafe.com/typesafe/releases/"})
