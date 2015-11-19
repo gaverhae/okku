@@ -7,3 +7,8 @@
 /checkouts
 /.lein-deps-sum
 /target
+/bin/
+/.classpath
+/.project
+/.nrepl-port
+/.settings
