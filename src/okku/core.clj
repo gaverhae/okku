@@ -72,8 +72,8 @@
 
 
 (defn ask
-  "Use the Akka ask pattern. Returns a future object
-  which can be waited on by calling 'wait'"
+  "Use the Akka ask pattern. Returns a scala.concurrent.Future object which can
+  be waited on by calling 'wait'"
   [^ActorRef actor msg timeout]
   (let [result (promise)]
      (.map (Patterns/ask actor msg timeout))))
@@ -81,8 +81,8 @@
 (def ? ask)
 
 (defn wait
-  "Wait on the specified Scala Future to complete and return its result with an
-optional timeout duration."
+  "Wait on the specified scala.concurrent.Future to complete and return its
+  result with an optional timeout duration."
   ([future]
      (Await/result future (Duration/Inf)))
   ([future duration]

@@ -1,15 +1,11 @@
 # Leiningen
 
 ```clojure
-[org.clojure.gaverhae/okku "0.1.4"]
+[org.clojure.gaverhae/okku "0.1.5"]
 ```
 
-Okku is primarily developped and tested on Clojure 1.4. It has been
-occasionally tested on 1.2 and 1.3, and it seems to work fine. Do not hesitate
-to report any incompatibility.
-
-Okku has recently been updated to rely on Akka `2.3.8`. This has not been
-extensively tested; please report any problem.
+Okku is primarily developped and tested on Clojure 1.7.0. It may work on older
+versions, though; please do not hesitate to report any misbehaviours.
 
 # Introduction
 
@@ -113,8 +109,17 @@ okku.lookup.<actor path> {
 If the path does not begin with a "/", Okku will automaticall add "/user/" in
 front of it.
 
+# Contributors
+
+In order of first commit:
+
+* Gary Verhaegen ([gaverhae](https://github.com/gaverhae))
+* Pedro Antonio Souza Viegas ([pasviegas](https://github.com/pasviegas))
+* Jonathan Harrrington ([prio](https://github.com/prio))
+* David Orme ([coconutpalm](https://github.com/coconutpalm))
+
 # License
 
-Copyright (C) 2012 Gary Verhaegen.
+Copyright (C) 2015 Gary Verhaegen & contributors (see license for details).
 
 Distributed under the Eclipse Public License, the same as Clojure.
