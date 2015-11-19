@@ -8,6 +8,7 @@
            [akka.remote RemoteScope]
            [akka.pattern Patterns]
            [scala.concurrent Await]
+           [scala.concurrent.duration Duration]
            [java.util.concurrent TimeUnit]
            [com.typesafe.config ConfigFactory])
   (:require clojure.string))
