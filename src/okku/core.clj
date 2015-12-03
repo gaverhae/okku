@@ -8,8 +8,8 @@
            [akka.remote RemoteScope]
            [akka.pattern Patterns]
            [scala.concurrent Await]
-           [java.util.concurrent TimeUnit]
            [scala.concurrent.duration Duration]
+           [java.util.concurrent TimeUnit]
            [com.typesafe.config ConfigFactory])
   (:require clojure.string))
 
@@ -50,7 +50,7 @@
   - `:file` should be the name of the config file (.conf appended by the library).
   - `:port` should be the port number for this ActorSystem (lower priority than config file).
   - `:hostname` should be the hostname for this ActorSystem (lower priority than config file).
-  - `:local` creates a local actor system (port and hostname options are then ignored; default to false)."
+  - `:local` creates a local actor system (port and hostname options are then ignored; defaults to false)."
   [name & {:keys [config file port local hostname]
            :or {file "application"
                 config false
@@ -72,16 +72,16 @@
 
 
 (defn ask
-  "Use the Akka ask pattern. Returns a future object
-  which can be waited on by calling 'wait'"
+  "Use the Akka ask pattern. Returns a scala.concurrent.Future object which can
+  be waited on by calling 'wait'"
   [^ActorRef actor timeout msg]
   (Patterns/ask actor msg timeout))
 
 (def ? ask)
 
 (defn wait
-  "Wait on the specified Scala Future to complete and return its result with an
-optional timeout duration."
+  "Wait on the specified scala.concurrent.Future to complete and return its
+  result with an optional timeout duration."
   ([future]
      (Await/result future (Duration/Inf)))
   ([future duration]
@@ -122,13 +122,13 @@ optional timeout duration."
 
 (defmacro spawn
   "Spawns a new actor (side-effect) and returns an ActorRef to it. The first
-  argument must be a Props object (such as created by the actor macro).
+  argument must be a Props object (such as created by the `actor` macro).
 
   Accepts the following options:
 
   - `:in` designates the ActorSystem in which to create the ActorRef. If no :in option is given, the new actor is created in the context of the current one.
   - `:router` specifies a Router object to serve as a router for the returned ActorRef (see Akka documentation).
-  - `:name is` used for both the full (logical) path of the returned ActorRef and for looking-up the relevant configuration concerning the to-be-created Actor (generated if none given).
+  - `:name` is used for both the full (logical) path of the returned ActorRef and for looking-up the relevant configuration concerning the to-be-created Actor (generated if none given).
   - `:deploy-on` must be the address of a remote ActorSystem in one of the three forms accepted by parse-address; the actor is remotely spawned on the remote system (as a root actor)."
   [actor-spec & {c :in r :router n :name d :deploy-on
                  :or {c '(.getContext this)}}]
@@ -186,7 +186,7 @@ optional timeout duration."
   [] '(.stop (.getContext this) (.getSelf this)))
 
 (defmacro shutdown
-  "Simple helper macro to send the shutdown signal to theenclosing ActorSystem."
+  "Simple helper macro to send the shutdown signal to the enclosing ActorSystem."
   [] '(-> this .getContext .system .shutdown))
 
 (defmacro actor

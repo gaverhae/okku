@@ -2,6 +2,15 @@ This file documents the changes to the API, not internal or documentation
 changes. It is intended for people who already use some version of the library
 and want to upgrade to another version.
 
+# v0.1.5 - 2015-11-19
+
+> Thanks to David Orme ([coconutpalm](https://github.com/coconutpalm)) for
+> doing just about all of the work that went into this release.
+
+- Update Akka to 2.3.14.
+- Update Clojure to 1.7.0.
+- Introduce a Clojure wrapper for the `ask` pattern.
+
 # v0.1.4 - 2015-01-18
 
 - Update Akka to 2.3.8. Important notes:

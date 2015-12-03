@@ -1,22 +1,18 @@
 # Leiningen
 
 ```clojure
-[org.clojure.gaverhae/okku "0.1.4"]
+[org.clojure.gaverhae/okku "0.1.5"]
 ```
 
-Okku is primarily developped and tested on Clojure 1.4. It has been
-occasionally tested on 1.2 and 1.3, and it seems to work fine. Do not hesitate
-to report any incompatibility.
-
-Okku has recently been updated to rely on Akka `2.3.8`. This has not been
-extensively tested; please report any problem.
+Okku is primarily developped and tested on Clojure 1.7.0. It may work on older
+versions, though; please do not hesitate to report any misbehaviours.
 
 # Introduction
 
-Okku is a Clojure wrapper for the Akka library. Akka is an erlang-inspired
-Scala library implementing the Actor model for concurrency and distribution.
+Okku is a Clojure wrapper for the Akka library. Akka is an Erlang-inspired
+Scala library implementing the actor model for concurrency and distribution.
 
-For explanations on the Actor model itself and how and when to use it, see the
+For explanations on the actor model itself and how and when to use it, see the
 documentation of either Akka or Erlang.
 
 # Usage
@@ -37,13 +33,13 @@ versions of the tutorials.
 
 ## Very brief introduction to the Akka actor hierarchy
 
-The Akka actor systems enforces a hierarchical structure. This means that every
+The Akka actor system enforces a hierarchical structure. This means that every
 actor is the child of another actor, and every actor knows its own children.
 
 Of course, every actor needing a parent means we have a chicken-and-egg
 problem, which Akka solves by creating special actors for you, which do not
 have (user-accessible) parents, and which are called Actor Systems. Basically,
-an Akka application begins by creating an Actor System, and then telling this
+an Akka application begins by creating an Actor System, and then tells this
 Actor System to spawn the required actors for the rest of the computation.
 Actors from this first generation of manually-created actors are typically
 thought of as the roots of the actor hierarchy within an application.
@@ -59,7 +55,7 @@ documentation (``docs`` folder) for details on the possible options.
 The first step in creating an actor is to define its behaviour. This is done
 through the ``actor`` macro, which yields an ``akka.actor.Props`` object (that
 could then be passed to ``.actorOf`` to create an actor from Akka). It is
-basically a wrapper around ``proxy``. Okku als defines a few convenience macros
+basically a wrapper around ``proxy``. Okku also defines a few convenience macros
 to use frequently accessed actor functionalities, such as ``stop``. See the
 [marginalia](https://github.com/fogus/marginalia/)-generated documentation in
 the ``docs`` folder for more details.
@@ -113,8 +109,17 @@ okku.lookup.<actor path> {
 If the path does not begin with a "/", Okku will automaticall add "/user/" in
 front of it.
 
+# Contributors
+
+In order of first commit:
+
+* Gary Verhaegen ([gaverhae](https://github.com/gaverhae))
+* Pedro Antonio Souza Viegas ([pasviegas](https://github.com/pasviegas))
+* Jonathan Harrrington ([prio](https://github.com/prio))
+* David Orme ([coconutpalm](https://github.com/coconutpalm))
+
 # License
 
-Copyright (C) 2012 Gary Verhaegen.
+Copyright (C) 2015 Gary Verhaegen & contributors (see license for details).
 
 Distributed under the Eclipse Public License, the same as Clojure.
