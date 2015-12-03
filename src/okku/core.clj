@@ -9,6 +9,7 @@
            [akka.pattern Patterns]
            [scala.concurrent Await]
            [java.util.concurrent TimeUnit]
+           [scala.concurrent.duration Duration]
            [com.typesafe.config ConfigFactory])
   (:require clojure.string))
 
@@ -74,8 +75,7 @@
   "Use the Akka ask pattern. Returns a future object
   which can be waited on by calling 'wait'"
   [^ActorRef actor msg timeout]
-  (let [result (promise)]
-     (.map (Patterns/ask actor msg timeout))))
+  (Patterns/ask actor msg timeout))
 
 (def ? ask)
 

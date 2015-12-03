@@ -1,6 +1,6 @@
 (ns okku.test.core
-  (:use [okku.core])
-  (:use [clojure.test]))
+  (:require [clojure.test :refer :all]
+            [okku.core :refer :all]))
 
 (deftest test-!
   (are [x y] (= (macroexpand-1 (quote x)) y)
@@ -64,8 +64,17 @@
        "
        [nil nil nil nil nil] ""))
 
+
 (deftest test-merge-addresses
   (are [x y z] (= x (@#'okku.core/merge-addresses y z))
        ["akka" "sys" "hn" "port" ["path1" "path2"]]
        ["akka" nil nil "port" nil]
        ["other" "sys" "hn" "other" ["path1" "path2"]]))
+
+
+(deftest test-ask
+  (let [system (actor-system "system")
+        actor (spawn (actor (onReceive [_] (! 42))) :in system)]
+    (is (= 42 (wait (? actor :message 5000))))
+    (.shutdown system)))
+
