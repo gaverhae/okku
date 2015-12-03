@@ -75,6 +75,7 @@
 (deftest test-ask
   (let [system (actor-system "system")
         actor (spawn (actor (onReceive [_] (! 42))) :in system)]
-    (is (= 42 (wait (? actor :message 5000))))
+    (is (= 42 (wait (? actor 5000 :message))))
     (.shutdown system)))
 
+(run-tests)

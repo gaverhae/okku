@@ -74,7 +74,7 @@
 (defn ask
   "Use the Akka ask pattern. Returns a future object
   which can be waited on by calling 'wait'"
-  [^ActorRef actor msg timeout]
+  [^ActorRef actor timeout msg]
   (Patterns/ask actor msg timeout))
 
 (def ? ask)
