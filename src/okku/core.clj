@@ -71,23 +71,22 @@
   ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
 
 
-(defn ask
-  "Use the Akka ask pattern. Returns a scala.concurrent.Future object which can
-  be waited on by calling 'wait'"
-  [^ActorRef actor timeout msg]
-  (Patterns/ask actor msg timeout))
-
-(def ? ask)
-
-(defn wait
-  "Wait on the specified scala.concurrent.Future to complete and return its
-  result with an optional timeout duration."
+(defn- wait
+  "Wait for a Scala Future to complete and return its result.  No longer API."
   ([future]
      (Await/result future (Duration/Inf)))
   ([future duration]
      (Await/result future (Duration/create
 			   (:value duration)
 			   (:unit duration)))))
+
+(defn ask
+  "Use the Akka ask pattern. Returns a Clojure future.  timeout is
+in milliseconds"
+  [^ActorRef actor msg timeout]
+     (future (wait (Patterns/ask actor msg timeout))))
+
+(def ? ask)
 
 (defmacro dispatch-on
   "Bascially expands to a cond with an equality test on the dispatch value dv,
