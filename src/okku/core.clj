@@ -11,7 +11,8 @@
            [scala.concurrent.duration Duration]
            [java.util.concurrent TimeUnit]
            [com.typesafe.config ConfigFactory])
-  (:require clojure.string))
+  (:require clojure.string
+            okku.caller :refer :all))
 
 (defn round-robin-router
   "Creates a round-robin router with n replicas."
@@ -63,6 +64,7 @@
       (-> (ConfigFactory/parseResourcesAnySyntax file)
         (restrict-config config)
         (remote-config local port hostname)))))
+
 
 (defmacro !
   "Sends the msg value as a message to target, or to current sender if target
