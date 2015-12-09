@@ -23,7 +23,12 @@ implementing Caller over additional types."
   [receiver & args]
   (-tell receiver args))
 
-(def ! tell)
+(defmacro !
+  "Send a message to a receiver, passing args.  This API returns nil.  This function
+delegates to implementations of the Caller protocol, so it is extensible by
+implementing Caller over additional types."
+  [receiver & args]
+  `(okku.caller/tell ~receiver ~@args))
 
 
 (defn ask
@@ -34,7 +39,13 @@ implementing Caller over additional types."
   [receiver & args]
   (-ask receiver args))
 
-(def ? ask)
+(defmacro ?
+  "Send a message to a receiver, passing args, and return a result.  Depending
+on the context, the result may be a future/promise.   This function
+delegates to implementations of the Caller protocol so it is extensible by
+implementing Caller over additional types."
+  [receiver & args]
+  `(okku.caller/ask ~receiver ~@args))
 
 
 (defn reply
@@ -43,6 +54,10 @@ of the Caller protocol, so it is extensible by implementing Caller over addition
   [this & args]
   (-reply this args))
 
-(def & reply)
+(defmacro &
+  "Reply to this message's sender.    This function delegates to implementations
+of the Caller protocol, so it is extensible by implementing Caller over additional types."
+  [this & args]
+  `(okku.caller/reply ~this ~@args))
 
 

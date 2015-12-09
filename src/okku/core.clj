@@ -11,8 +11,8 @@
            [scala.concurrent.duration Duration]
            [java.util.concurrent TimeUnit]
            [com.typesafe.config ConfigFactory])
-  (:require clojure.string
-            okku.caller :refer :all))
+  (:require [clojure.string]
+            [okku.caller :refer :all]))
 
 (defn round-robin-router
   "Creates a round-robin router with n replicas."
@@ -66,13 +66,6 @@
         (remote-config local port hostname)))))
 
 
-(defmacro !
-  "Sends the msg value as a message to target, or to current sender if target
-  is not specified. Can only be used inside an actor."
-  ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
-  ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
-
-
 (defn- wait
   "Wait for a Scala Future to complete and return its result.  No longer API."
   ([future]
@@ -82,13 +75,56 @@
 			   (:value duration)
 			   (:unit duration)))))
 
-(defn ask
-  "Use the Akka ask pattern. Returns a Clojure future.  timeout is
-in milliseconds"
-  [^ActorRef actor msg timeout]
-     (future (wait (Patterns/ask actor msg timeout))))
 
-(def ? ask)
+(defn- --tell
+  "Send a message to the specified actor.  Returns nil.  Args are in the form:
+   [receiver msg] or [receiver msg return-actor]"
+  [receiver args]
+  (case (count args)
+      1 (.tell receiver (first args) nil)
+      2 (.tell receiver (first args) (.getSelf (second args)))
+      (IllegalArgumentException. (str "Found " (count args) " args; expected [receiver msg] or [receiver msg return-actor]"))))
+
+
+(defn- --reply
+  "Reply to the actor that sent the current message.  Arity of args must be 1."
+  [this args]
+  (assert (= (count args) 1))
+  (.tell (.getSender this) (first args) (.getSelf this)))
+
+
+(defn- --ask
+  "Call an actor and return a Future that will return the result of the actor's message."
+  [receiver args]
+  (assert (= (count args) 2))
+  (future (wait (Patterns/ask receiver (first args) (second args)))))
+
+
+(extend-protocol Caller
+  ActorRef
+  (-tell [receiver args] (--tell receiver args))
+  (-reply [this args] (--reply this args))
+  (-ask [receiver args] (--ask receiver args))
+
+  UntypedActor
+  (-tell [receiver args] (--tell receiver args))
+  (-reply [this args] (--reply this args))
+  (-ask [receiver args] (--ask receiver args)))
+
+
+;(defmacro !
+;  "Sends the msg value as a message to target, or to current sender if target
+;  is not specified. Can only be used inside an actor."
+;  ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
+;  ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
+;
+;(defn ask
+;  "Use the Akka ask pattern. Returns a Clojure future.  timeout is
+;in milliseconds"
+;  [^ActorRef actor msg timeout]
+;     (future (wait (Patterns/ask actor msg timeout))))
+;
+;(def ? ask)
 
 (defmacro dispatch-on
   "Bascially expands to a cond with an equality test on the dispatch value dv,

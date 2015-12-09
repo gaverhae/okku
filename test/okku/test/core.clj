@@ -1,11 +1,7 @@
 (ns okku.test.core
   (:require [clojure.test :refer :all]
-            [okku.core :refer :all]))
-
-(deftest test-!
-  (are [x y] (= (macroexpand-1 (quote x)) y)
-       (okku.core/! msg) '(.tell (.getSender this) msg (.getSelf this))
-       (okku.core/! target msg) '(.tell target msg (.getSelf this))))
+            [okku.core :refer :all]
+            [okku.caller :refer :all]))
 
 (deftest test-spawn
   (are [x y] (= (macroexpand-1 (quote x)) y)
@@ -74,8 +70,8 @@
 
 (deftest test-ask
   (let [system (actor-system "system")
-        actor (spawn (actor (onReceive [_] (! 42))) :in system)]
-    (is (= 42 (wait (? actor 5000 :message))))
+        actor (spawn (actor (onReceive [_] (reply this 42))) :in system)]
+    (is (= 42 @(ask actor :message 5000)))
     (.shutdown system)))
 
 (run-tests)
