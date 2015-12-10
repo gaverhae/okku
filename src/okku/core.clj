@@ -79,37 +79,39 @@
 (defn- --tell
   "Send a message to the specified actor.  Returns nil.  Args are in the form:
    [receiver msg] or [receiver msg return-actor]"
-  [receiver args]
-  (case (count args)
-      1 (.tell receiver (first args) nil)
-      2 (.tell receiver (first args) (.getSelf (second args)))
-      (IllegalArgumentException. (str "Found " (count args) " args; expected [receiver msg] or [receiver msg return-actor]"))))
+  ([receiver]
+    (.tell receiver [] nil))
+  ([receiver & args]
+    (if (instance? UntypedActor (first args))
+      (.tell receiver (vec (rest args)) (.getSelf (first args)))
+      (.tell receiver args nil))))
 
 
 (defn- --reply
-  "Reply to the actor that sent the current message.  Arity of args must be 1."
-  [this args]
-  (assert (= (count args) 1))
-  (.tell (.getSender this) (first args) (.getSelf this)))
+  "Reply to the actor that sent the current message."
+  [this & args]
+  (let [result (if (= (count args) 1) (first args) args)]
+    (.tell (.getSender this) result (.getSelf this))))
 
 
 (defn- --ask
   "Call an actor and return a Future that will return the result of the actor's message."
-  [receiver args]
-  (assert (= (count args) 2))
-  (future (wait (Patterns/ask receiver (first args) (second args)))))
+  [receiver & args]
+  (if (empty? args)
+    (throw (IllegalArgumentException. (str "Found " (inc (count args)) " args; expected [receiver timeout & msg]"))))
+  (future (wait (Patterns/ask receiver (vec (rest args)) (first args)))))
 
 
 (extend-protocol Caller
   ActorRef
-  (-tell [receiver args] (--tell receiver args))
-  (-reply [this args] (--reply this args))
-  (-ask [receiver args] (--ask receiver args))
+  (-tell [receiver args] (apply --tell receiver args))
+  (-reply [this args] (apply --reply this args))
+  (-ask [receiver args] (apply --ask receiver args))
 
   UntypedActor
-  (-tell [receiver args] (--tell receiver args))
-  (-reply [this args] (--reply this args))
-  (-ask [receiver args] (--ask receiver args)))
+  (-tell [receiver args] (apply --tell receiver args))
+  (-reply [this args] (apply --reply this args))
+  (-ask [receiver args] (apply --ask receiver args)))
 
 
 ;(defmacro !
