@@ -84,4 +84,3 @@
     (is @success)
     (.shutdown system)))
 
-(run-tests)
