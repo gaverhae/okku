@@ -76,6 +76,14 @@
 			   (:unit duration)))))
 
 
+(defn- to-message
+  "Messages with a single value aren't wrapped in a collection"
+  [args]
+  (if (= 1 (count args))
+    (first args)
+    args))
+
+
 (defn- --tell
   "Send a message to the specified actor.  Returns nil.  Args are in the form:
    [receiver msg] or [receiver msg return-actor]"
@@ -83,15 +91,14 @@
     (.tell receiver [] nil))
   ([receiver & args]
     (if (instance? UntypedActor (first args))
-      (.tell receiver (vec (rest args)) (.getSelf (first args)))
-      (.tell receiver args nil))))
+      (.tell receiver (to-message (rest args)) (.getSelf (first args)))
+      (.tell receiver (to-message args) nil))))
 
 
 (defn- --reply
   "Reply to the actor that sent the current message."
   [this & args]
-  (let [result (if (= (count args) 1) (first args) args)]
-    (.tell (.getSender this) result (.getSelf this))))
+  (.tell (.getSender this) (to-message args) (.getSelf this)))
 
 
 (defn- --ask
@@ -99,7 +106,7 @@
   [receiver & args]
   (if (empty? args)
     (throw (IllegalArgumentException. (str "Found " (inc (count args)) " args; expected [receiver timeout & msg]"))))
-  (future (wait (Patterns/ask receiver (vec (rest args)) (first args)))))
+  (future (wait (Patterns/ask receiver (to-message (rest args)) (first args)))))
 
 
 (extend-protocol Caller

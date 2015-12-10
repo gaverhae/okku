@@ -70,7 +70,7 @@
 
 (deftest test-ask
   (let [system (actor-system "system" :local true)
-        actor (spawn (actor (onReceive [[m]] (when (= :message m) (reply this 42)))) :in system)]
+        actor (spawn (actor (onReceive [m] (when (= :message m) (reply this 42)))) :in system)]
     (is (= 42 @(ask actor 5000 :message)))
     (.shutdown system)))
 
@@ -78,9 +78,10 @@
 (deftest test-tell
   (let [system (actor-system "system" :local true)
         success (atom false)
-        actor (spawn (actor (onReceive [[m]] (when (= 42 m) (reset! success true)))) :in system)]
+        actor (spawn (actor (onReceive [m] (when (= 42 m) (reset! success true)))) :in system)]
     (tell actor 42)
     (Thread/sleep 100)
     (is @success)
     (.shutdown system)))
 
+(run-tests)
