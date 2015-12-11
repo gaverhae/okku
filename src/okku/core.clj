@@ -66,6 +66,8 @@
         (remote-config local port hostname)))))
 
 
+;; Message processing
+
 (defn- wait
   "Wait for a Scala Future to complete and return its result.  No longer API."
   ([future]
@@ -86,19 +88,13 @@
 
 (defn- --tell
   "Send a message to the specified actor.  Returns nil.  Args are in the form:
-   [receiver msg] or [receiver msg return-actor]"
+   [receiver msg] or [receiver].  The unary form sends an empty vector as the message."
   ([receiver]
     (.tell receiver [] nil))
   ([receiver & args]
     (if (instance? UntypedActor (first args))
       (.tell receiver (to-message (rest args)) (.getSelf (first args)))
       (.tell receiver (to-message args) nil))))
-
-
-(defn- --reply
-  "Reply to the actor that sent the current message."
-  [this & args]
-  (.tell (.getSender this) (to-message args) (.getSelf this)))
 
 
 (defn- --ask
@@ -109,31 +105,28 @@
   (future (wait (Patterns/ask receiver (to-message (rest args)) (first args)))))
 
 
+(defn- --ask!
+  "Call an actor and return the result of the actor's message."
+  [receiver & args]
+  (if (empty? args)
+    (throw (IllegalArgumentException. (str "Found " (inc (count args)) " args; expected [receiver timeout & msg]"))))
+  (wait (Patterns/ask receiver (to-message (rest args)) (first args))))
+
+
 (extend-protocol Caller
   ActorRef
   (-tell [receiver args] (apply --tell receiver args))
-  (-reply [this args] (apply --reply this args))
+  (-tell! [receiver args] (apply --tell receiver args))
   (-ask [receiver args] (apply --ask receiver args))
+  (-ask! [receiver args] (apply --ask! receiver args))
 
   UntypedActor
   (-tell [receiver args] (apply --tell receiver args))
-  (-reply [this args] (apply --reply this args))
-  (-ask [receiver args] (apply --ask receiver args)))
+  (-tell! [receiver args] (apply --tell receiver args))
+  (-ask [receiver args] (apply --ask receiver args))
+  (-ask! [receiver args] (apply --ask! receiver args)))
 
 
-;(defmacro !
-;  "Sends the msg value as a message to target, or to current sender if target
-;  is not specified. Can only be used inside an actor."
-;  ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
-;  ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
-;
-;(defn ask
-;  "Use the Akka ask pattern. Returns a Clojure future.  timeout is
-;in milliseconds"
-;  [^ActorRef actor msg timeout]
-;     (future (wait (Patterns/ask actor msg timeout))))
-;
-;(def ? ask)
 
 (defmacro dispatch-on
   "Bascially expands to a cond with an equality test on the dispatch value dv,

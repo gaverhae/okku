@@ -7,13 +7,17 @@
   (-tell [receiver args]
     "Asyncronous fire and forget protocol.  This API returns nil.")
 
-  (-reply [this args]
-    "When used in a message handler, reply to this message's sender.")
+  (-tell! [receiver args]
+    "Synchronous send-and-wait protocol.  Depending on the receiver, (e.g.: remote)
+    synchronous behavior may not be possible, in which case this is synonymous
+    with asynchronous -tell.")
 
   (-ask [receiver args]
-  "Send a message to a receiver, passing args, and return a result.  Depending
-on context, the result may be a future/promise.  Consult the implementation's
-API docs for details."))
+    "Send a message to a receiver, passing args, and return the result
+    in a Future or Promise.")
+
+  (-ask! [receiver args]
+    "Send a message to a receiver, passing args, and wait for the result."))
 
 
 (defn tell
@@ -23,41 +27,43 @@ implementing Caller over additional types."
   [receiver & args]
   (-tell receiver args))
 
-(defmacro !
+(def !
   "Send a message to a receiver, passing args.  This API returns nil.  This function
 delegates to implementations of the Caller protocol, so it is extensible by
 implementing Caller over additional types."
-  [receiver & args]
-  `(okku.caller/tell ~receiver ~@args))
+  tell)
 
+(defn tell!
+  "Synchronous send-and-wait protocol.  Depending on the receiver, (e.g.: remote)
+synchronous behavior may not be possible, in which case this is synonymous
+with asynchronous -tell."
+  [receiver args]
+  (-tell! receiver args))
+
+(def !!
+  "Synchronous send-and-wait protocol.  Depending on the receiver, (e.g.: remote)
+synchronous behavior may not be possible, in which case this is synonymous
+with asynchronous -tell."
+  tell!)
 
 (defn ask
-  "Send a message to a receiver, passing args, and return a result.  Depending
-on the context, the result may be a future/promise.   This function
-delegates to implementations of the Caller protocol so it is extensible by
-implementing Caller over additional types."
+  "Send a message to a receiver, passing args, and return a future or promise
+that will contain the result.  This function delegates to implementations of
+the Caller protocol so it is extensible by implementing Caller over additional types."
   [receiver & args]
   (-ask receiver args))
 
-(defmacro ?
-  "Send a message to a receiver, passing args, and return a result.  Depending
-on the context, the result may be a future/promise.   This function
-delegates to implementations of the Caller protocol so it is extensible by
-implementing Caller over additional types."
+(def ?
+  "Send a message to a receiver, passing args, and return a future or promise
+that will contain the result.  This function delegates to implementations of
+the Caller protocol so it is extensible by implementing Caller over additional types."
+  ask)
+
+(defn ask!
+  "Send a message to a receiver, passing args, and wait for the result."
   [receiver & args]
-  `(okku.caller/ask ~receiver ~@args))
+  (-ask! receiver args))
 
-
-(defn reply
-  "Reply to this message's sender.    This function delegates to implementations
-of the Caller protocol, so it is extensible by implementing Caller over additional types."
-  [this & args]
-  (-reply this args))
-
-(defmacro &
-  "Reply to this message's sender.    This function delegates to implementations
-of the Caller protocol, so it is extensible by implementing Caller over additional types."
-  [this & args]
-  `(okku.caller/reply ~this ~@args))
-
-
+(def ??
+  "Send a message to a receiver, passing args, and wait for the result."
+  ask!)

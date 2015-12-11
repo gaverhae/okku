@@ -3,6 +3,7 @@
             [okku.core :refer :all]
             [okku.caller :refer :all]))
 
+
 (deftest test-spawn
   (are [x y] (= (macroexpand-1 (quote x)) y)
        (okku.core/spawn act) '(.actorOf (.getContext this) act)
@@ -70,8 +71,15 @@
 
 (deftest test-ask
   (let [system (actor-system "system" :local true)
-        actor (spawn (actor (onReceive [m] (when (= :message m) (reply this 42)))) :in system)]
+        actor (spawn (actor (onReceive [m] (when (= :message m) (! (.getSender this) 42)))) :in system)]
     (is (= 42 @(ask actor 5000 :message)))
+    (.shutdown system)))
+
+
+(deftest test-ask!
+  (let [system (actor-system "system" :local true)
+        actor (spawn (actor (onReceive [m] (when (= :message m) (! (.getSender this) 42)))) :in system)]
+    (is (= 42 (ask! actor 5000 :message)))
     (.shutdown system)))
 
 
