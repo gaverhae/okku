@@ -87,14 +87,16 @@
 
 
 (defn- --tell
-  "Send a message to the specified actor.  Returns nil.  Args are in the form:
+  "Send a message to the specified actor.  Returns receiver.  Args are in the form:
    [receiver msg] or [receiver].  The unary form sends an empty vector as the message."
   ([receiver]
-    (.tell receiver [] nil))
+    (.tell receiver [] nil)
+    receiver)
   ([receiver & args]
     (if (instance? UntypedActor (first args))
       (.tell receiver (to-message (rest args)) (.getSelf (first args)))
-      (.tell receiver (to-message args) nil))))
+      (.tell receiver (to-message args) nil))
+    receiver))
 
 
 (defn- --ask
