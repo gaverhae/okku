@@ -1,11 +1,8 @@
 (ns okku.test.core
-  (:use [okku.core])
-  (:use [clojure.test]))
+  (:require [clojure.test :refer :all]
+            [okku.core :refer :all]
+            [okku.caller :refer :all]))
 
-(deftest test-!
-  (are [x y] (= (macroexpand-1 (quote x)) y)
-       (okku.core/! msg) '(.tell (.getSender this) msg (.getSelf this))
-       (okku.core/! target msg) '(.tell target msg (.getSelf this))))
 
 (deftest test-spawn
   (are [x y] (= (macroexpand-1 (quote x)) y)
@@ -64,8 +61,34 @@
        "
        [nil nil nil nil nil] ""))
 
+
 (deftest test-merge-addresses
   (are [x y z] (= x (@#'okku.core/merge-addresses y z))
        ["akka" "sys" "hn" "port" ["path1" "path2"]]
        ["akka" nil nil "port" nil]
        ["other" "sys" "hn" "other" ["path1" "path2"]]))
+
+
+(deftest test-ask
+  (let [system (actor-system "system" :local true)
+        actor (spawn (actor (onReceive [m] (when (= :message m) (! (.getSender this) 42)))) :in system)]
+    (is (= 42 @(ask actor 5000 :message)))
+    (.shutdown system)))
+
+
+(deftest test-ask!
+  (let [system (actor-system "system" :local true)
+        actor (spawn (actor (onReceive [m] (when (= :message m) (! (.getSender this) 42)))) :in system)]
+    (is (= 42 (ask! actor 5000 :message)))
+    (.shutdown system)))
+
+
+(deftest test-tell
+  (let [system (actor-system "system" :local true)
+        success (atom false)
+        actor (spawn (actor (onReceive [m] (when (= 42 m) (reset! success true)))) :in system)]
+    (tell actor 42)
+    (Thread/sleep 100)
+    (is @success)
+    (.shutdown system)))
+

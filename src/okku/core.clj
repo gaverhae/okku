@@ -11,7 +11,8 @@
            [scala.concurrent.duration Duration]
            [java.util.concurrent TimeUnit]
            [com.typesafe.config ConfigFactory])
-  (:require clojure.string))
+  (:require [clojure.string]
+            [okku.caller :refer :all]))
 
 (defn round-robin-router
   "Creates a round-robin router with n replicas."
@@ -64,31 +65,70 @@
         (restrict-config config)
         (remote-config local port hostname)))))
 
-(defmacro !
-  "Sends the msg value as a message to target, or to current sender if target
-  is not specified. Can only be used inside an actor."
-  ([msg] `(.tell (.getSender ~'this) ~msg (.getSelf ~'this)))
-  ([target msg] `(.tell ~target ~msg (.getSelf ~'this))))
 
+;; Message processing
 
-(defn ask
-  "Use the Akka ask pattern. Returns a scala.concurrent.Future object which can
-  be waited on by calling 'wait'"
-  [^ActorRef actor msg timeout]
-  (let [result (promise)]
-     (.map (Patterns/ask actor msg timeout))))
-
-(def ? ask)
-
-(defn wait
-  "Wait on the specified scala.concurrent.Future to complete and return its
-  result with an optional timeout duration."
+(defn- wait
+  "Wait for a Scala Future to complete and return its result.  No longer API."
   ([future]
      (Await/result future (Duration/Inf)))
   ([future duration]
      (Await/result future (Duration/create
 			   (:value duration)
 			   (:unit duration)))))
+
+
+(defn- to-message
+  "Messages with a single value aren't wrapped in a collection"
+  [args]
+  (if (= 1 (count args))
+    (first args)
+    args))
+
+
+(defn- --tell
+  "Send a message to the specified actor.  Returns receiver.  Args are in the form:
+   [receiver msg] or [receiver].  The unary form sends an empty vector as the message."
+  ([receiver]
+    (.tell receiver [] nil)
+    receiver)
+  ([receiver & args]
+    (if (instance? UntypedActor (first args))
+      (.tell receiver (to-message (rest args)) (.getSelf (first args)))
+      (.tell receiver (to-message args) nil))
+    receiver))
+
+
+(defn- --ask
+  "Call an actor and return a Future that will return the result of the actor's message."
+  [receiver & args]
+  (if (empty? args)
+    (throw (IllegalArgumentException. (str "Found " (inc (count args)) " args; expected [receiver timeout & msg]"))))
+  (future (wait (Patterns/ask receiver (to-message (rest args)) (first args)))))
+
+
+(defn- --ask!
+  "Call an actor and return the result of the actor's message."
+  [receiver & args]
+  (if (empty? args)
+    (throw (IllegalArgumentException. (str "Found " (inc (count args)) " args; expected [receiver timeout & msg]"))))
+  (wait (Patterns/ask receiver (to-message (rest args)) (first args))))
+
+
+(extend-protocol Caller
+  ActorRef
+  (-tell [receiver args] (apply --tell receiver args))
+  (-tell! [receiver args] (apply --tell receiver args))
+  (-ask [receiver args] (apply --ask receiver args))
+  (-ask! [receiver args] (apply --ask! receiver args))
+
+  UntypedActor
+  (-tell [receiver args] (apply --tell receiver args))
+  (-tell! [receiver args] (apply --tell receiver args))
+  (-ask [receiver args] (apply --ask receiver args))
+  (-ask! [receiver args] (apply --ask! receiver args)))
+
+
 
 (defmacro dispatch-on
   "Bascially expands to a cond with an equality test on the dispatch value dv,
